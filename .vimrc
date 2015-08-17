@@ -10,6 +10,7 @@ call vundle#rc()
 Bundle 'gmarik/vundle'
 Bundle 'tpope/vim-fugitive'
 Bundle 'scrooloose/nerdtree'
+Plugin 'davidhalter/jedi-vim'
 Plugin 'tpope/vim-markdown'
 Plugin 'tpope/vim-repeat'
 Plugin 'tpope/vim-surround'
@@ -17,6 +18,7 @@ Plugin 'altercation/vim-colors-solarized'
 Plugin 'python.vim'
 Plugin 'django.vim'
 Plugin 'scrooloose/syntastic'
+Plugin 'tpope/vim-commentary'
 
 " The bundles you install will be listed here
 
