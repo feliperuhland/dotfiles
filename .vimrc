@@ -19,10 +19,16 @@ Plugin 'python.vim'
 Plugin 'django.vim'
 Plugin 'scrooloose/syntastic'
 Plugin 'tpope/vim-commentary'
+Plugin 'othree/html5.vim'
+Plugin 'leshill/vim-json'
+Plugin 'hail2u/vim-css3-syntax'
+Plugin 'HTML-AutoCloseTag'
 
 " The bundles you install will be listed here
 
 filetype plugin indent on
+
+autocmd FileType xhtml,html set shiftwidth=2 softtabstop=2 tabstop=2
 
 map <F2> :NERDTreeToggle<CR>
 

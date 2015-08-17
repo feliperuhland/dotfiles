@@ -1,3 +1,4 @@
 feh --bg-scale ~/Downloads/archlinux.png
 conky &
 xrdb -merge ~/.Xresources
+xscreensaver -no-splash
