@@ -1,0 +1,17 @@
+URxvt.scrollBar: false
+URxvt.cursorBlink: true
+Xft.rgba: rgb
+URxvt*bordless: true
+URxvt*borderwidth: 0
+URxvt*internalBorder: 0
+URxvt*lineSpace: 1
+
+! #include ".Xresources.d/colors/erosion"
+
+! Background color
+! URxvt*background: black
+
+! Font color
+! URxvt*foreground: white
+
+URxvt.geometry: 140x30
