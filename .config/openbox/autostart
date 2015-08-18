@@ -2,3 +2,4 @@ feh --bg-scale ~/Downloads/archlinux.png
 conky &
 xrdb -merge ~/.Xresources
 xscreensaver -no-splash
+python ~/dev/projects/battery-monitor/baterry_monitor.py &
