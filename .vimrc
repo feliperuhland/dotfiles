@@ -2,14 +2,14 @@ set nocompatible
 filetype on
 syntax on
 
-set rtp+=~/.vim/bundle/vundle/
-call vundle#rc()
+set rtp+=~/.vim/bundle/Vundle.vim/
+call vundle#begin()
 
 " let Vundle manage Vundle
 " required! 
-Bundle 'gmarik/vundle'
-Bundle 'tpope/vim-fugitive'
-Bundle 'scrooloose/nerdtree'
+Plugin 'gmarik/vundle'
+Plugin 'tpope/vim-fugitive'
+Plugin 'scrooloose/nerdtree'
 Plugin 'davidhalter/jedi-vim'
 Plugin 'tpope/vim-markdown'
 Plugin 'tpope/vim-repeat'
@@ -25,6 +25,7 @@ Plugin 'hail2u/vim-css3-syntax'
 Plugin 'HTML-AutoCloseTag'
 
 " The bundles you install will be listed here
+call vundle#end()
 
 filetype plugin indent on
 
@@ -38,6 +39,12 @@ let g:solarized_termcolors=256
 colorscheme solarized
 
 set number
+set pastetoggle=<F10>
+set backupdir=~/.vim/backup_files//
+set directory=~/.vim/swap_files//
+set undodir=~/.vim/undo_files//
+let g:jedi#use_tabs_not_buffers = 1
+set hlsearch
 
 let g:pymode_rope = 0
 
