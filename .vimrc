@@ -23,13 +23,15 @@ Plugin 'othree/html5.vim'
 Plugin 'leshill/vim-json'
 Plugin 'hail2u/vim-css3-syntax'
 Plugin 'HTML-AutoCloseTag'
+Plugin 'airblade/vim-gitgutter'
+Plugin 'pangloss/vim-javascript'
 
 " The bundles you install will be listed here
 call vundle#end()
 
 filetype plugin indent on
 
-autocmd FileType xhtml,html set shiftwidth=2 softtabstop=2 tabstop=2
+autocmd FileType xhtml,html,js set shiftwidth=2 softtabstop=2 tabstop=2
 
 map <F2> :NERDTreeToggle<CR>
 
