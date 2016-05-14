@@ -336,28 +336,28 @@
     </keybind>
     <keybind key="XF86AudioRaiseVolume">
       <action name="Execute">
-        <command>amixer -c 0 set Master 5%+ unmute</command>
+        <command>amixer -D pulse set Master 5%+ unmute</command>
       </action>
     </keybind>
     <keybind key="XF86AudioLowerVolume">
       <action name="Execute">
-        <command>amixer -c 0 set Master 5%- unmute</command>
+        <command>amixer -D pulse set Master 5%- unmute</command>
       </action>
     </keybind>
     <keybind key="XF86AudioMute">
       <action name="Execute">
-        <command>amixer -c 0 set Master toggle</command>
+        <command>amixer -D pulse set Master toggle</command>
       </action>
     </keybind>
     <keybind key="XF86MonBrightnessUp">
-        <action name="Execute">
-            <command>xbacklight +10</command>
-        </action>
+      <action name="Execute">
+        <command>xbacklight +10</command>
+      </action>
     </keybind>
     <keybind key="XF86MonBrightnessDown">
-        <action name="Execute">
-            <command>xbacklight -10</command>
-        </action>
+      <action name="Execute">
+        <command>xbacklight -10</command>
+      </action>
     </keybind>
     <keybind key="W-t">
       <action name="Execute">
@@ -392,7 +392,12 @@
           <enabled>true</enabled>
           <name>ScreenSaver</name>
         </startupnotify>
-        <command>xscreensaver-command --lock</command>
+	<command>sh -c 'slock &amp; (sleep .5 &amp;&amp; xset dpms force off)'</command>
+      </action>
+    </keybind>
+    <keybind key="W-2">
+      <action name="MoveResizeTo">
+        <monitor>2</monitor>
       </action>
     </keybind>
   </keyboard>

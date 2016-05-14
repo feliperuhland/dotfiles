@@ -25,6 +25,8 @@ Plugin 'hail2u/vim-css3-syntax'
 Plugin 'HTML-AutoCloseTag'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'pangloss/vim-javascript'
+Plugin 'Rykka/InstantRst'
+Plugin 'burnettk/vim-angular'
 
 " The bundles you install will be listed here
 call vundle#end()
@@ -34,6 +36,10 @@ filetype plugin indent on
 autocmd FileType xhtml,html,js set shiftwidth=2 softtabstop=2 tabstop=2
 
 map <F2> :NERDTreeToggle<CR>
+set pastetoggle=<F10>
+set backupdir=~/.vim/backup_files//
+set directory=~/.vim/swap_files//
+set undodir=~/.vim/undo_files//
 
 syntax enable
 set background=dark
@@ -66,6 +72,7 @@ let g:pymode_virtualenv = 1
 " Enable breakpoints plugin
 let g:pymode_breakpoint = 1
 let g:pymode_breakpoint_bind = '<leader>b'
+let g:jedi#use_tabs_not_buffers = 1
 
 " syntax highlighting
 let g:pymode_syntax = 1
@@ -89,5 +96,19 @@ let g:syntastic_check_on_wq = 0
 " Teste com statusline
 set wildmode=longest,list,full
 set wildmenu
+
+" let g:go_highlight_functions = 1
+" let g:go_highlight_methods = 1
+" let g:go_highlight_structs = 1
+" let g:go_highlight_operators = 1
+" let g:go_highlight_build_constraints = 1
+" let g:go_fmt_command = "goimports"
+" 
+" au FileType go nmap <leader>r <Plug>(go-run)
+" au FileType go nmap <leader>b <Plug>(go-build)
+" au FileType go nmap <leader>t <Plug>(go-test)
+" au FileType go nmap <leader>c <Plug>(go-coverage)
+" 
+" inoremap <C-Space> <C-x><C-o>
 
 " The rest of your config follows here

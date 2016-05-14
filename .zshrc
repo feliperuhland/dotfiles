@@ -1,5 +1,7 @@
 # Path to your oh-my-zsh installation.
 export ZSH=/home/ruhland/.oh-my-zsh
+export GOPATH=~/go
+export PATH="$PATH:$GOPATH/bin"
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -49,7 +51,7 @@ ZSH_THEME="daveverwer"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git docker)
 # plugins=(git history-substring-search)
 
 # User configuration
