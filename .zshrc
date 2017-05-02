@@ -51,8 +51,8 @@ ZSH_THEME="daveverwer"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git docker)
-# plugins=(git history-substring-search)
+# plugins=(git docker)
+plugins=(git docker history-substring-search)
 
 # User configuration
 
