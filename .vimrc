@@ -25,8 +25,12 @@ Plugin 'hail2u/vim-css3-syntax'
 Plugin 'HTML-AutoCloseTag'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'pangloss/vim-javascript'
-Plugin 'Rykka/InstantRst'
 Plugin 'burnettk/vim-angular'
+Plugin 'mxw/vim-jsx'
+Plugin 'editorconfig/editorconfig-vim'
+Plugin 'fatih/vim-go'
+Plugin 'nsf/gocode', {'rtp': 'vim/'}
+
 
 " The bundles you install will be listed here
 call vundle#end()
@@ -34,6 +38,8 @@ call vundle#end()
 filetype plugin indent on
 
 autocmd FileType xhtml,html,js set shiftwidth=2 softtabstop=2 tabstop=2
+autocmd FileType yml,yaml set shiftwidth=2 softtabstop=2 tabstop=2
+autocmd FileType go set shiftwidth=4 softtabstop=4 tabstop=4
 
 map <F2> :NERDTreeToggle<CR>
 set pastetoggle=<F10>
@@ -97,18 +103,21 @@ let g:syntastic_check_on_wq = 0
 set wildmode=longest,list,full
 set wildmenu
 
-" let g:go_highlight_functions = 1
-" let g:go_highlight_methods = 1
-" let g:go_highlight_structs = 1
-" let g:go_highlight_operators = 1
-" let g:go_highlight_build_constraints = 1
-" let g:go_fmt_command = "goimports"
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_structs = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_build_constraints = 1
+let g:go_fmt_command = "goimports"
 " 
 " au FileType go nmap <leader>r <Plug>(go-run)
 " au FileType go nmap <leader>b <Plug>(go-build)
 " au FileType go nmap <leader>t <Plug>(go-test)
 " au FileType go nmap <leader>c <Plug>(go-coverage)
 " 
-" inoremap <C-Space> <C-x><C-o>
+inoremap <C-space> <C-x><C-o>
+imap <C-@> <C-Space>
 
 " The rest of your config follows here
+"
+let g:jsx_ext_required = 0 " Allow JSX in normal JS files
