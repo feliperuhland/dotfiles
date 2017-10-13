@@ -2,6 +2,7 @@
 export ZSH=/home/ruhland/.oh-my-zsh
 export GOPATH=~/go
 export PATH="$PATH:$GOPATH/bin"
+export DOCKER_HOST=tcp://$HOST:2376 DOCKER_TLS_VERIFY=1
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -89,3 +90,4 @@ bindkey '^[OA' history-beginning-search-backward
 bindkey '^[OB' history-beginning-search-forward
 
 alias dc='docker-compose'
+alias vi='nvim'
