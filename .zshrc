@@ -5,7 +5,6 @@ export PATH="$PATH:$GOPATH/bin"
 export PYTHONDONTWRITEBYTECODE=1
 export VISUAL=vim
 export EDITOR=vim
-#export DOCKER_HOST=tcp://$HOST:2376 DOCKER_TLS_VERIFY=1
 
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
@@ -61,6 +60,7 @@ plugins=(git docker history-substring-search)
 # User configuration
 
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl"
+export PATH="$PATH:$GOPATH/bin:/snap/bin"
 # export MANPATH="/usr/local/man:$MANPATH"
 
 source $ZSH/oh-my-zsh.sh

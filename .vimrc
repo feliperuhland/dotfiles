@@ -32,7 +32,7 @@ Plugin 'fatih/vim-go'
 Plugin 'nsf/gocode', {'rtp': 'vim/'}
 Plugin 'prettier/vim-prettier'
 Plugin 'majutsushi/tagbar'
-Plugin 'Shougo/denite.nvim'
+Plugin 'c.vim'
 
 
 " The bundles you install will be listed here
@@ -45,9 +45,8 @@ autocmd FileType yml,yaml set shiftwidth=2 softtabstop=2 tabstop=2
 autocmd FileType go set shiftwidth=4 softtabstop=4 tabstop=4
 
 map <F2> :NERDTreeToggle<CR>
-map <F3> :Denite file_rec<CR>
-map <F8> :TagbarToggle<CR>
 set pastetoggle=<F10>
+<<<<<<< Updated upstream
 set backupdir=~/.vim/backup_files/
 set directory=~/.vim/swap_files/
 set undodir=~/.vim/undo_files/
@@ -124,11 +123,6 @@ let g:go_fmt_command = "goimports"
 inoremap <C-space> <C-x><C-o>
 imap <C-@> <C-Space>
 
-call denite#custom#map('insert', '<C-j>', '<denite:move_to_next_line>', 'noremap')
-call denite#custom#map('insert', '<C-k>', '<denite:move_to_previous_line>', 'noremap')
-call denite#custom#filter('matcher_ignore_globs', 'ignore_globs',
-	      \ [ '.git/', '.ropeproject/', '__pycache__/', '*.class',
-	      \   'venv/', 'images/', '*.min.*', 'img/', 'fonts/'])
 
 " The rest of your config follows here
 "
