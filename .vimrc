@@ -33,6 +33,7 @@ Plugin 'nsf/gocode', {'rtp': 'vim/'}
 Plugin 'prettier/vim-prettier'
 Plugin 'majutsushi/tagbar'
 Plugin 'c.vim'
+Plugin 'ctrlpvim/ctrlp.vim'
 
 
 " The bundles you install will be listed here
@@ -45,8 +46,8 @@ autocmd FileType yml,yaml set shiftwidth=2 softtabstop=2 tabstop=2
 autocmd FileType go set shiftwidth=4 softtabstop=4 tabstop=4
 
 map <F2> :NERDTreeToggle<CR>
+map <F8> :TagbarToggle<CR>
 set pastetoggle=<F10>
-<<<<<<< Updated upstream
 set backupdir=~/.vim/backup_files/
 set directory=~/.vim/swap_files/
 set undodir=~/.vim/undo_files/
@@ -58,10 +59,6 @@ let g:solarized_termcolors=256
 colorscheme solarized
 
 set number
-set pastetoggle=<F10>
-set backupdir=~/.vim/backup_files//
-set directory=~/.vim/swap_files//
-set undodir=~/.vim/undo_files//
 let g:jedi#use_tabs_not_buffers = 1
 set hlsearch
 
@@ -127,3 +124,6 @@ imap <C-@> <C-Space>
 " The rest of your config follows here
 "
 let g:jsx_ext_required = 1 " Allow JSX in normal JS files
+
+let g:ctrlp_map = '<c-p>'
+let g:ctrlp_cmd = 'CtrlP'
