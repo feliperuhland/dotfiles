@@ -6,6 +6,9 @@ URxvt*borderwidth: 0
 URxvt*internalBorder: 0
 URxvt*lineSpace: 1
 
+URxvt.font: -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso8859-1
+URxvt.boldFont: -misc-fixed-bold-r-semicondensed--13-120-75-75-c-60-iso8859-1
+
 #include ".Xresources.d/colors/erosion"
 
 ! Background color

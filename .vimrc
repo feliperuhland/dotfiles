@@ -28,12 +28,15 @@ Plugin 'pangloss/vim-javascript'
 Plugin 'burnettk/vim-angular'
 Plugin 'mxw/vim-jsx'
 Plugin 'editorconfig/editorconfig-vim'
-Plugin 'fatih/vim-go'
+Plugin 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
 Plugin 'nsf/gocode', {'rtp': 'vim/'}
 Plugin 'prettier/vim-prettier'
 Plugin 'majutsushi/tagbar'
 Plugin 'c.vim'
 Plugin 'ctrlpvim/ctrlp.vim'
+Plugin 'posva/vim-vue'
+Plugin 'psf/black'
+Plugin 'rust-lang/rust.vim'
 
 
 " The bundles you install will be listed here
@@ -42,8 +45,9 @@ call vundle#end()
 filetype plugin indent on
 
 autocmd FileType xhtml,html,js set shiftwidth=2 softtabstop=2 tabstop=2
+autocmd FileType vue set shiftwidth=2 softtabstop=2 tabstop=2
 autocmd FileType yml,yaml set shiftwidth=2 softtabstop=2 tabstop=2
-autocmd FileType go set shiftwidth=4 softtabstop=4 tabstop=4
+" autocmd FileType go set shiftwidth=4 softtabstop=4 tabstop=4
 
 map <F2> :NERDTreeToggle<CR>
 map <F8> :TagbarToggle<CR>

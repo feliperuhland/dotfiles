@@ -1,7 +1,6 @@
 # Path to your oh-my-zsh installation.
 export ZSH=/home/ruhland/.oh-my-zsh
 export GOPATH=~/go
-export PATH="$PATH:$GOPATH/bin"
 export PYTHONDONTWRITEBYTECODE=1
 export VISUAL=vim
 export EDITOR=vim
