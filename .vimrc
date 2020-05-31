@@ -37,6 +37,9 @@ Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'posva/vim-vue'
 Plugin 'psf/black'
 Plugin 'rust-lang/rust.vim'
+Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plugin 'junegunn/fzf.vim'
+Plugin 'itchyny/lightline.vim'
 
 
 " The bundles you install will be listed here
@@ -50,7 +53,12 @@ autocmd FileType yml,yaml set shiftwidth=2 softtabstop=2 tabstop=2
 " autocmd FileType go set shiftwidth=4 softtabstop=4 tabstop=4
 
 map <F2> :NERDTreeToggle<CR>
+map <F3> :Files<CR>
 map <F8> :TagbarToggle<CR>
+
+set laststatus=2
+set noshowmode
+
 set pastetoggle=<F10>
 set backupdir=~/.vim/backup_files/
 set directory=~/.vim/swap_files/

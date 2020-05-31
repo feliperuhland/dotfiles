@@ -192,4 +192,4 @@ mode "$mode_system" {
 
 bindsym $mod+Delete mode "$mode_system"
 
-exec /usr/lib/notify-osd-customizable/notify-osd &
+exec /usr/lib/notify-osd/notify-osd &
