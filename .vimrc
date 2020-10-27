@@ -55,6 +55,7 @@ autocmd FileType yml,yaml set shiftwidth=2 softtabstop=2 tabstop=2
 map <F2> :NERDTreeToggle<CR>
 map <F3> :Files<CR>
 map <F8> :TagbarToggle<CR>
+nnoremap <F9> :Black<CR>
 
 set laststatus=2
 set noshowmode
@@ -112,6 +113,7 @@ let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
+" let g:syntastic_python_checkers=['mypy']
 
 " Teste com statusline
 set wildmode=longest,list,full
@@ -139,3 +141,5 @@ let g:jsx_ext_required = 1 " Allow JSX in normal JS files
 
 let g:ctrlp_map = '<c-p>'
 let g:ctrlp_cmd = 'CtrlP'
+
+let g:black_virtualenv = "~/.black-venv/"
