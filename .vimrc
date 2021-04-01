@@ -37,9 +37,13 @@ Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'posva/vim-vue'
 Plugin 'psf/black'
 Plugin 'rust-lang/rust.vim'
-Plugin 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plugin 'junegunn/fzf.vim'
 Plugin 'itchyny/lightline.vim'
+" Plugin 'Shougo/deoplete.nvim'
+" Plugin 'roxma/nvim-yarp'
+" Plugin 'roxma/vim-hug-neovim-rpc'
+"Plugin 'ftplugin/go.vim'
+Plugin 'vimwiki/vimwiki'
 
 
 " The bundles you install will be listed here
@@ -54,11 +58,14 @@ autocmd FileType yml,yaml set shiftwidth=2 softtabstop=2 tabstop=2
 
 map <F2> :NERDTreeToggle<CR>
 map <F3> :Files<CR>
+map <F4> :Ag<CR>
 map <F8> :TagbarToggle<CR>
 nnoremap <F9> :Black<CR>
 
 set laststatus=2
 set noshowmode
+set ic
+set is
 
 set pastetoggle=<F10>
 set backupdir=~/.vim/backup_files/
@@ -119,18 +126,32 @@ let g:syntastic_check_on_wq = 0
 set wildmode=longest,list,full
 set wildmenu
 
+set autowrite
+
+let g:go_def_mode = 'godef'
+"let g:go_info_mode = 'gopls'
+let g:go_highlight_fields = 1
 let g:go_highlight_functions = 1
+let g:go_highlight_function_calls = 1
+let g:go_highlight_extra_types = 1
 let g:go_highlight_methods = 1
 let g:go_highlight_structs = 1
 let g:go_highlight_operators = 1
 let g:go_highlight_build_constraints = 1
+
+let g:go_fmt_autosave = 1
 let g:go_fmt_command = "goimports"
+
+let g:go_auto_type_info = 1
+
+au filetype go inoremap <buffer> . .<C-x><C-o>
 " 
-" au FileType go nmap <leader>r <Plug>(go-run)
-" au FileType go nmap <leader>b <Plug>(go-build)
-" au FileType go nmap <leader>t <Plug>(go-test)
-" au FileType go nmap <leader>c <Plug>(go-coverage)
+au FileType go nmap <leader>r <Plug>(go-run)
+au FileType go nmap <leader>b <Plug>(go-build)
+au FileType go nmap <leader>t <Plug>(go-test)
+au FileType go nmap <leader>c <Plug>(go-coverage)
 " 
+au FileType go inoremap {<cr> {<cr>}<esc>O
 inoremap <C-space> <C-x><C-o>
 imap <C-@> <C-Space>
 
@@ -143,3 +164,7 @@ let g:ctrlp_map = '<c-p>'
 let g:ctrlp_cmd = 'CtrlP'
 
 let g:black_virtualenv = "~/.black-venv/"
+"let g:deoplete#enable_at_startup = 1
+"let g:go_debug = ['gopls']
+"
+au FileType go setlocal omnifunc=go#complete#Complete
