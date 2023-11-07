@@ -193,3 +193,5 @@ mode "$mode_system" {
 bindsym $mod+Delete mode "$mode_system"
 
 exec /usr/lib/notify-osd/notify-osd &
+
+exec setxkbmap -layout us -variant intl -option ctrl:nocaps
