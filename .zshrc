@@ -1,4 +1,3 @@
-# Lines configured by zsh-newuser-install
 HISTFILE=~/.histfile
 HISTSIZE=10000
 SAVEHIST=10000
@@ -31,6 +30,8 @@ autoload -Uz vcs_info
 
 zstyle ':vcs_info:git:*' formats '[%b]'
 
+plugins=(git virtualenv)
+
 PROMPT="%F{red}%n %F{blue}%3~%f"
 
 precmd() {
@@ -52,5 +53,9 @@ precmd() {
 
 setopt PROMPT_SUBST
 
+export PATH="$PATH:/home/ruhlandf/.local/bin"
+
 compinit
 # End of lines added by compinstall
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
