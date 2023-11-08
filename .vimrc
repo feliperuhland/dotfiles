@@ -17,7 +17,6 @@ Plug 'vim-scripts/tagbar'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'lervag/vimtex'
 Plug 'ycm-core/YouCompleteMe'
-Plug 'github/copilot.vim'
 Plug 'nvie/vim-flake8'
 Plug 'ambv/black'
 Plug 'vimwiki/vimwiki'
@@ -76,5 +75,3 @@ set undodir=~/.vim/undo_files/
 inoremap <C-space> <C-x><C-o>
 
 let g:black_virtualenv = "~/.black-venv/"
-
-highlight CopilotSuggestion guifg=#000000 ctermfg=8
