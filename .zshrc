@@ -32,11 +32,19 @@ zstyle ':vcs_info:git:*' formats '[%b]'
 
 plugins=(git virtualenv)
 
-PROMPT="%F{red}%n %F{blue}%3~%f"
+set_virtual_env() {
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+        echo " %F{cyan}(${VIRTUAL_ENV:t})%f"
+    else
+        echo ""
+    fi
+}
+
+PROMPT="%F{red}%n %F{blue}%3~%f$(set_virtual_env)"
 
 precmd() {
     vcs_info
-    PROMPT="%F{red}%n %F{blue}%3~%f"
+    PROMPT="%F{red}%n %F{blue}%3~%f$(set_virtual_env)"
     if [[ -n ${vcs_info_msg_0_} ]]; then
         # vcs_info found something (the documentation got that backwards
         # STATUS line taken from https://github.com/robbyrussell/oh-my-zsh/blob/master/lib/git.zsh
