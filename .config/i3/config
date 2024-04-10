@@ -47,10 +47,13 @@ bindsym $mod+Shift+n exec ~/.screenlayout/notebook.sh
 bindsym $mod+Shift+m exec ~/.screenlayout/home-3m-2k-2.sh
 
 # Assign applications to workspace
-assign [class="Slack" title=".*Slack$"] 10
 assign [class="Slack" title="^Huddle.*"] 7
-assign [class="URxvt" title="^bluetoothctl$"] 9
-assign [class="Pavucontrol"] 9
+assign [class="firefox" title="^WhatsApp.*"] 8
+assign [class="Signal"] 8
+assign [class="Slack" title=".*Slack$"] 9
+assign [class="Bitwarden"] 9
+assign [class="URxvt" title="^bluetoothctl$"] 0
+assign [class="Pavucontrol"] 0
 
 # change focus
 bindsym $mod+h focus left
