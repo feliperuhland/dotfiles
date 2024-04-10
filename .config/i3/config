@@ -42,6 +42,16 @@ bindsym $mod+d exec dmenu_run
 # installed.
 # bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
+# screen binds
+bindsym $mod+Shift+n exec ~/.screenlayout/notebook.sh
+bindsym $mod+Shift+m exec ~/.screenlayout/home-3m-2k-2.sh
+
+# Assign applications to workspace
+assign [class="Slack" title=".*Slack$"] 10
+assign [class="Slack" title="^Huddle.*"] 7
+assign [class="URxvt" title="^bluetoothctl$"] 9
+assign [class="Pavucontrol"] 9
+
 # change focus
 bindsym $mod+h focus left
 bindsym $mod+j focus down
@@ -194,3 +204,5 @@ bindsym $mod+Delete mode "$mode_system"
 exec dunst &
 
 exec setxkbmap -layout us -variant intl -option ctrl:nocaps
+
+exec_always ~/.config-i3
