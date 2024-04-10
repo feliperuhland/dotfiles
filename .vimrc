@@ -9,21 +9,17 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
-" Plug 'altercation/vim-colors-solarized'
-" Plug 'vim-scripts/python.vim'
 Plug 'airblade/vim-gitgutter'
 Plug 'junegunn/fzf' 
 Plug 'junegunn/fzf.vim' 
 Plug 'vim-scripts/tagbar'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'lervag/vimtex'
-" Plug 'ycm-core/YouCompleteMe'
-" Plug 'nvie/vim-flake8'
-" Plug 'ambv/black'
 Plug 'vimwiki/vimwiki'
-" Plug 'tpope/vim-fugitive'
-Plug 'github/copilot.vim'
 Plug 'catppuccin/vim', { 'as': 'catppuccin' }
+Plug 'dart-lang/dart-vim-plugin'
+Plug 'thosakwe/vim-flutter'
+
 
 " List ends here. Plugins become visible to Vim after this call.
 call plug#end()
@@ -80,3 +76,12 @@ set undodir=~/.vim/undo_files/
 inoremap <C-space> <C-x><C-o>
 
 let g:black_virtualenv = "~/.black-venv/"
+
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice.
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+let g:flutter_show_log_on_run = "tab"
+let g:dart_style_guide = 2
+let g:dart_format_on_save = v:true

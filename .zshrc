@@ -61,9 +61,9 @@ precmd() {
 
 setopt PROMPT_SUBST
 
-export PATH="$PATH:/home/ruhlandf/.local/bin"
-
 compinit
 # End of lines added by compinstall
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+eval "$(direnv hook zsh)"
