@@ -61,6 +61,8 @@ precmd() {
 
 setopt PROMPT_SUBST
 
+export PATH="$PATH:/home/ruhlandf/.local/bin"
+export PATH="$PATH:/usr/local/go/bin"
 compinit
 # End of lines added by compinstall
 

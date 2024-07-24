@@ -17,9 +17,7 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'lervag/vimtex'
 Plug 'vimwiki/vimwiki'
 Plug 'catppuccin/vim', { 'as': 'catppuccin' }
-Plug 'dart-lang/dart-vim-plugin'
-Plug 'thosakwe/vim-flutter'
-
+Plug 'github/copilot.vim'
 
 " List ends here. Plugins become visible to Vim after this call.
 call plug#end()
@@ -77,11 +75,10 @@ inoremap <C-space> <C-x><C-o>
 
 let g:black_virtualenv = "~/.black-venv/"
 
+
+imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
+
 " Make <CR> to accept selected completion item or notify coc.nvim to format
 " <C-g>u breaks current undo, please make your own choice.
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
                               \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-
-let g:flutter_show_log_on_run = "tab"
-let g:dart_style_guide = 2
-let g:dart_format_on_save = v:true
