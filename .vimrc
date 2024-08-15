@@ -17,7 +17,7 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'lervag/vimtex'
 Plug 'vimwiki/vimwiki'
 Plug 'catppuccin/vim', { 'as': 'catppuccin' }
-Plug 'github/copilot.vim'
+"Plug 'github/copilot.vim'
 
 " List ends here. Plugins become visible to Vim after this call.
 call plug#end()

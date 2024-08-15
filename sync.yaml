@@ -1,0 +1,32 @@
+---
+- hosts: localhost
+  tasks:
+    - name: .config synlink
+      ansible.builtin.file:
+        src: "$PWD/.config/{{ item }}"
+        dest: "~/.config/{{ item }}"
+        state: link
+      loop:
+        - i3
+        - dunst
+        - polybar
+
+    - name: HOME synlink
+      ansible.builtin.file:
+        src: "$PWD/{{ item }}"
+        dest: "~/{{ item }}"
+        state: link
+      loop:
+        - .Xresources
+        - .Xresources.d
+        - .vimrc
+        - .zshrc
+
+    - name: .vim directories
+      ansible.builtin.file:
+        path: "~/.vim/{{ item }}"
+        state: directory
+      loop:
+        - swap_files
+        - backup_files
+        - undo_files

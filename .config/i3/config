@@ -219,4 +219,4 @@ exec_always setxkbmap -layout us -variant intl -option ctrl:nocaps
 
 exec_always ~/.config-i3
 
-exec_always --no-startup-id polibar
+exec_always --no-startup-id polybar
