@@ -14,6 +14,8 @@ bindkey '^[OB' history-beginning-search-forward
 export KEYTIMEOUT=1
 bindkey -v
 
+alias ls='ls --color=auto'
+
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
 zstyle :compinstall filename '/home/ruhland/.zshrc'
