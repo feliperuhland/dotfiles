@@ -1,5 +1,7 @@
 ---
 - hosts: localhost
+  vars_files:
+    - local_config.yaml
   tasks:
     - name: .config synlink
       ansible.builtin.file:
@@ -7,7 +9,6 @@
         dest: "~/.config/{{ item }}"
         state: link
       loop:
-        - i3
         - dunst
         - polybar
 
@@ -19,7 +20,6 @@
       loop:
         - .Xresources
         - .Xresources.d
-        - .vimrc
         - .zshrc
 
     - name: .vim directories
@@ -30,3 +30,15 @@
         - swap_files
         - backup_files
         - undo_files
+    - name: Generate config file with templates
+      template:
+        src: templates/{{ item }}.j2
+        dest: "$HOME/{{ item }}"
+      loop:
+        - .vimrc
+        - .config/i3/config
+    - name: Generate sync executable file
+      template:
+        src: templates/sync.j2
+        dest: "/home/$USER/.local/bin/dotfiles"
+        mode: "0755"

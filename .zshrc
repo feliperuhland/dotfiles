@@ -9,25 +9,25 @@ export EDITOR=vim
 
 bindkey -e
 
-bindkey '^[OA' history-beginning-search-backward
-bindkey '^[OB' history-beginning-search-forward
 export KEYTIMEOUT=1
 bindkey -v
 
 alias ls='ls --color=auto'
+alias ll='ls -lah'
 
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
-zstyle :compinstall filename '/home/ruhland/.zshrc'
+zstyle :compinstall filename '/home/$USER/.zshrc'
 
 autoload -Uz compinit promptinit
 
 # history
 bindkey "^[[A" history-beginning-search-backward
 bindkey "^[[B" history-beginning-search-forward
+bindkey '^[OA' history-beginning-search-backward
+bindkey '^[OB' history-beginning-search-forward
 
 # git
-
 autoload -Uz vcs_info
 
 zstyle ':vcs_info:git:*' formats '[%b]'
@@ -63,7 +63,7 @@ precmd() {
 
 setopt PROMPT_SUBST
 
-export PATH="$PATH:/home/ruhlandf/.local/bin"
+export PATH="$PATH:/home/$USER/.local/bin"
 export PATH="$PATH:/usr/local/go/bin"
 compinit
 # End of lines added by compinstall

@@ -1,0 +1,67 @@
+filetype on
+syntax on
+
+" Plugins will be downloaded under the specified directory.
+call plug#begin(has('nvim') ? stdpath('data') . '/plugged' : '~/.vim/plugged')
+
+" Declare the list of plugins.
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-surround'
+Plug 'airblade/vim-gitgutter'
+Plug 'junegunn/fzf' 
+Plug 'junegunn/fzf.vim' 
+Plug 'vim-scripts/tagbar'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'lervag/vimtex'
+Plug 'vimwiki/vimwiki'
+Plug 'catppuccin/vim', { 'as': 'catppuccin' }
+{% if config.copilot %}
+Plug 'github/copilot.vim'
+{% endif %}
+
+" List ends here. Plugins become visible to Vim after this call.
+call plug#end()
+
+map <F2> :NERDTreeToggle<CR>
+map <F3> :Files<CR>
+map <F4> :Ag<CR>
+map <F8> :TagbarToggle<CR>
+
+set ruler
+set ic
+set is
+set clipboard=unnamed
+set hlsearch
+
+let g:pymode_rope = 0
+
+" Documentation
+let g:pymode_doc = 1
+let g:pymode_doc_key = 'K'
+
+filetype plugin on
+set omnifunc=syntaxcomplete#Complete
+
+"let g:solarized_termcolors=256
+"colorscheme solarized
+set background=dark
+colorscheme catppuccin_mocha
+set termguicolors
+set number
+
+set backupdir=~/.vim/backup_files/
+set directory=~/.vim/swap_files/
+set undodir=~/.vim/undo_files/
+
+inoremap <C-space> <C-x><C-o>
+
+let g:black_virtualenv = "~/.black-venv/"
+
+{% if config.copilot %}
+imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
+
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+{% endif %}
