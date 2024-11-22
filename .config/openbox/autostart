@@ -1,8 +1,0 @@
-/usr/lib/notify-osd-customizable/notify-osd &
-$BG -solid "#303030"
-xsetroot -solid "#202020"
-# feh --bg-scale ~/Downloads/archlinux.png
-conky &
-python /home/ruhland//dev/projects/battery-monitor/baterry_monitor.py &
-xrdb -merge ~/.Xresources
-xscreensaver -no-splash
