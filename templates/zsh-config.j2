@@ -12,12 +12,13 @@ bindkey -e
 export KEYTIMEOUT=1
 bindkey -v
 
-alias ls='ls --color=auto'
-alias ll='ls -lah'
+#alias
+alias ll="ls -lah --color=auto"
+alias tt="tree -aI .git"
 
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
-zstyle :compinstall filename '/home/$USER/.zshrc'
+zstyle :compinstall filename "/home/$USER/.zshrc"
 
 autoload -Uz compinit promptinit
 

@@ -3,15 +3,6 @@
   vars_files:
     - local_config.yaml
   tasks:
-    - name: .config synlink
-      ansible.builtin.file:
-        src: "$PWD/.config/{{ item }}"
-        dest: "~/.config/{{ item }}"
-        state: link
-      loop:
-        - dunst
-        - polybar
-
     - name: HOME synlink
       ansible.builtin.file:
         src: "$PWD/{{ item }}"
@@ -20,23 +11,30 @@
       loop:
         - .Xresources
         - .Xresources.d
-        - .zshrc
 
-    - name: .vim directories
+    - name: Create necessary directories
       ansible.builtin.file:
-        path: "~/.vim/{{ item }}"
+        path: "$HOME/{{ item }}"
         state: directory
       loop:
-        - swap_files
-        - backup_files
-        - undo_files
+        - .vim/swap_files
+        - .vim/backup_files
+        - .vim/undo_files
+        - .config/i3
+        - .config/dunst
+        - .config/polybar
+
     - name: Generate config file with templates
       template:
-        src: templates/{{ item }}.j2
-        dest: "$HOME/{{ item }}"
+        src: templates/{{ item.src }}.j2
+        dest: "$HOME/{{ item.dst }}"
       loop:
-        - .vimrc
-        - .config/i3/config
+        - { src: "vim-config", dst: ".vimrc"}
+        - { src: "i3-config", dst: ".config/i3/config"}
+        - { src: "zsh-config", dst: ".zshrc"}
+        - { src: "dunst-config", dst: ".config/dunst/dunstrc"}
+        - { src: "polybar-config", dst: ".config/polybar/config.ini"}
+
     - name: Generate sync executable file
       template:
         src: templates/sync.j2

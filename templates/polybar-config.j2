@@ -1,4 +1,4 @@
-;==========================================================
+;;==========================================================
 ;
 ;
 ;   ██████╗  ██████╗ ██╗  ██╗   ██╗██████╗  █████╗ ██████╗
@@ -99,11 +99,12 @@ label = %title:0:60:...%
 type = internal/temperature
 interval = 0.5
 thermal-zone = 0
-hwmon-path = /sys/devices/platform/coretemp.0/hwmon/hwmon5/temp1_input
+hwmon-path = /sys/devices/platform/coretemp.0/hwmon/hwmon6/temp1_input
 base-temperature = 40
-warn-temperature = 90
+warn-temperature = 85 
 label-warn = WARN %temperature-c%
 label-warn-foreground = #D9534F
+label = %{F#8ABEB7}TEMP%{F-} %temperature-c%
 
 [module/filesystem]
 type = internal/fs
@@ -132,7 +133,7 @@ label-muted-foreground = ${colors.disabled}
 type = internal/xkeyboard
 blacklist-0 = num lock
 
-label-layout = %layout%
+label-layout = KEY%{F-} %layout%
 label-layout-foreground = ${colors.primary}
 
 label-indicator-padding = 2
@@ -159,7 +160,7 @@ type = internal/network
 interval = 5
 format-connected = <label-connected>
 format-disconnected = <label-disconnected>
-label-disconnected = %{F#72A29C}%ifname%%{F#707880} disconnected
+label-disconnected = 
 
 [module/wlan]
 inherit = network-base
@@ -175,8 +176,8 @@ label-connected = %{F#8ABEB7}%ifname%%{F-} %local_ip%
 type = internal/date
 interval = 1
 
-date = %H:%M
-date-alt = %Y-%m-%d %H:%M:%S
+date = %Y-%m-%d %H:%M:%S
+date-alt = %H:%M
 
 label = %date%
 label-foreground = ${colors.primary}
@@ -184,10 +185,28 @@ label-foreground = ${colors.primary}
 [module/battery]
 type = internal/battery
 full-at = 100
-low-at = 5
+low-at = 15
 battery = BAT0
 adapter = ADP1
 poll-interval = 5
+
+time-format = %H:%M
+
+format-charging = <label-charging>
+format-discharging = <label-discharging>
+format-full = <label-full>
+format-low = <animation-low> <label-low>
+
+label-charging = %{F#72A29C}BAT%{F-} + %percentage%%
+label-discharging = %{F#72A29C}BAT%{F-} - %percentage%%
+label-full = %{F#72A29C}BAT%{F-} %percentage%%
+label-low = %{F#72A29C}BAT%{F-} %percentage%%
+
+; Only applies if <animation-low> is used
+; New in version 3.6.0
+animation-low-0 = %{F#A54242}LOW BATTERY
+animation-low-1 = LOW BATTERY
+animation-low-framerate = 200
 
 [settings]
 screenchange-reload = true
