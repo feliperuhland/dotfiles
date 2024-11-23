@@ -1,0 +1,18 @@
+#! /usr/bin/env python
+
+import html
+import re
+from urllib import request
+
+
+def run():
+    response = request.urlopen("https://www.buienalarm.nl/nederland/amsterdam/5576")
+    data = response.read().decode()
+    temp = re.findall("<span class=\"text-secondary font-semibold text-6xl inline-block\">([^<]+)</span>", data)[0]
+    temp = html.unescape(temp)
+    rain = re.findall("<span class=\"text-md\">([^<]+)</span>", data)[1]
+    print(f"{temp}C {rain}mm".replace(",", "."))
+
+
+if __name__ == "__main__":
+    run()

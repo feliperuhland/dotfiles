@@ -35,8 +35,11 @@
         - { src: "dunst-config", dst: ".config/dunst/dunstrc"}
         - { src: "polybar-config", dst: ".config/polybar/config.ini"}
 
-    - name: Generate sync executable file
+    - name: Generate sync executable file with templates
       template:
-        src: templates/sync.j2
-        dest: "/home/$USER/.local/bin/dotfiles"
+        src: templates/{{ item.src }}.j2
+        dest: "/home/$USER/.local/bin/{{ item.dst }}"
         mode: "0755"
+      loop:
+        - { src: "sync", dst: "dotfiles"}
+        - { src: "weather", dst: "polybar_weather"}

@@ -50,8 +50,8 @@ separator-foreground = ${colors.disabled}
 
 font-0 = monospace:size=8;2
 
-modules-left = xworkspaces xwindow
-modules-right = temperature filesystem pulseaudio xkeyboard memory cpu battery wlan eth date
+modules-left = xworkspaces
+modules-right = weather temperature filesystem pulseaudio xkeyboard memory cpu battery wlan eth systray date
 
 cursor-click = pointer
 cursor-scroll = ns-resize
@@ -207,6 +207,11 @@ label-low = %{F#72A29C}BAT%{F-} %percentage%%
 animation-low-0 = %{F#A54242}LOW BATTERY
 animation-low-1 = LOW BATTERY
 animation-low-framerate = 200
+
+[module/weather]
+type = custom/script
+exec = ./.local/bin/polybar_weather
+format-prefix = %{F#72A29C}AMS %{F-}
 
 [settings]
 screenchange-reload = true
