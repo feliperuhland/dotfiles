@@ -217,7 +217,7 @@ exec dunst &
 
 exec_always setxkbmap -layout us -variant intl -option ctrl:nocaps
 
-exec_always --no-startup-id polybar
+exec --no-startup-id polybar {{ config.polybar_options }}
 
 exec_always --no-startup-id feh --bg-center {{ config.background }}
 
