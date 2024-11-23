@@ -3,3 +3,5 @@ config:
   background: ""
   pwd: "{{ lookup('env', 'PWD') }}"
   copilot: false
+  polybar_options: ""
+  hwmon: 1
