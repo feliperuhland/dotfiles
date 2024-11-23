@@ -43,5 +43,6 @@
       loop:
         - { src: "sync", dst: "dotfiles"}
         - { src: "weather", dst: "polybar_weather"}
+        - { src: "euro", dst: "polybar_euro"}
     - name: Restart polybar
       ansible.builtin.command: polybar-msg cmd restart
