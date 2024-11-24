@@ -1,19 +1,21 @@
 #! /usr/bin/env python
 
-import html
 import re
 from urllib import request
 
 
-USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0"
+USER_AGENT = "curl/7.81.0"
 
 
 def run():
-    req = request.Request("https://wise.com/br/currency-converter/eur-to-brl-rate", headers={"User-Agent": USER_AGENT})
-    response = request.urlopen(req)
-    data = response.read().decode()
-    value = re.findall("<span class=\"text-success\">([^<]+)</span>", data)[0]
-    print(f"{value}".replace(",", "."))
+    try:
+        req = request.Request("https://wise.com/br/currency-converter/eur-to-brl-rate", headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
+        response = request.urlopen(req)
+        data = response.read().decode()
+        value = re.findall("<span class=\"text-success\">([^<]+)</span>", data)[0]
+        print(f"{value}".replace(",", "."))
+    except Exception:
+        print("-")
 
 
 if __name__ == "__main__":
