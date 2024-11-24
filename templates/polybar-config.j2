@@ -166,11 +166,13 @@ label-disconnected =
 inherit = network-base
 interface-type = wireless
 label-connected = %{F#8ABEB7}%ifname%%{F-} %essid% %local_ip%
+interface = {{ config.wlan_interface }}
 
 [module/eth]
 inherit = network-base
 interface-type = wired
 label-connected = %{F#8ABEB7}%ifname%%{F-} %local_ip%
+interface = {{ config.eth_interface }}
 
 [module/date]
 type = internal/date
