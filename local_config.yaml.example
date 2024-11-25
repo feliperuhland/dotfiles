@@ -5,3 +5,4 @@ config:
   copilot: false
   polybar_options: ""
   hwmon: 1
+  euro: false
