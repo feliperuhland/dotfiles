@@ -1,48 +1,98 @@
 #! /usr/bin/env python
 
+import asyncio
 import datetime
 import json
+import subprocess
 import sys
-import time
 
 
-def print_line(txt: str, end="\n"):
-    sys.stdout.write(txt + end)
-    sys.stdout.flush()
+class Block:
+    def __init__(self, interval: int = 30) -> None:
+        self.interval = interval
+        self.data = {}
+
+    async def update(self):
+        """Override this method in subclasses for specific behavior."""
+        pass
+
+    async def run(self):
+        """Runs the update method periodically forever."""
+        while True:
+            await self.update()
+            await asyncio.sleep(self.interval)
 
 
-def print_dict(d: dict, end="\n"):
-    print_line(json.dumps(d), end)
+class DateBlock(Block):
+    async def update(self) -> None:
+        full_text = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
+        short_text = str(datetime.datetime.now().date())
+        self.data = {"full_text": full_text, "short_text": short_text}
+
+class NetworkBlock(Block):
+    def __init__(self, interface: str, interval: int = 30):
+        self.interface = interface
+        super().__init__(interval)
+
+    async def update(self):
+        process = subprocess.run("nmcli c show --active".split(), capture_output=True)
+        for net in process.stdout.decode().split("\n")[1:]:
+            if net and net.split()[3].upper() == self.interface.upper():
+                text = f"{net.split()[3].upper()} {net.split()[0]}"
+                full_text= text
+                short_text= text
+                self.data = {"full_text": full_text, "short_text": short_text}
+                break
+        else:
+            self.data = {}
 
 
-def print_header():
-    print_dict({"version": 1})
+class Writer:
+    def print_line(self, txt: str):
+        self._print(txt)
+
+    def print_text(self, txt: str):
+        self._print(txt, end="")
+
+    def _print(self, txt: str, end="\n") -> None:
+        sys.stdout.write(txt + end)
+        sys.stdout.flush()
 
 
-def print_list_opener():
-    print_line("[")
+class Bar:
+    def __init__(self, writer: Writer) -> None:
+        self.writer = writer
+        self.block_list = []
+        self.headers = {"version": 1}
+
+    def add_block(self, block: Block) -> None:
+        self.block_list.append(block)
+
+    def start(self):
+        self.writer.print_line(json.dumps(self.headers))
+        self.writer.print_line("[")
+
+    async def update(self):
+        while True:
+            block_update_list = []
+            for block in self.block_list:
+                if block.data:
+                    block_update_list.insert(0, block.data)
+
+            self.writer.print_line(json.dumps(block_update_list) + ",")
+            await asyncio.sleep(1)
 
 
-def set_date() -> dict[str, str]:
-    full_date = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
-    short_date = str(datetime.datetime.now().date())
-    return {"full_text": full_date, "short_name": short_date}
+async def main():
+    w = Writer()
+    bar = Bar(w)
+    bar.add_block(DateBlock(1))
+    bar.add_block(NetworkBlock("wlan0", 5))
 
-
-
-def print_command_list():
-    command_list = []
-    command_list.append(set_date())
-    print_line(json.dumps(command_list) + ",")
-
-
-def main():
-    print_header()
-    print_list_opener()
-    while True:
-        print_command_list()
-        time.sleep(1)
+    bar.start()
+    tasks = [asyncio.create_task(obj.run()) for obj in bar.block_list]
+    await asyncio.gather(*tasks, asyncio.create_task(bar.update()))
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
