@@ -2,10 +2,22 @@
 
 import asyncio
 import datetime
+import html
+import http.client
 import json
 import pathlib
+import re
 import subprocess
 import sys
+
+
+def make_request(host, path):
+    connection = http.client.HTTPSConnection(host)
+    connection.request("GET", path, headers={"host": host})
+    response = connection.getresponse()
+    data = response.read().decode()
+    connection.close()
+    return response.status, data
 
 
 class Block:
@@ -118,6 +130,18 @@ class CpuTempBlock(Block):
         self.set_data("TEMP", f"{value}°C")
 
 
+class WeatherBlock(Block):
+    async def update(self) -> None:
+        host = "www.buienalarm.nl"
+        path = "/nederland/amsterdam/5576"
+        loop = asyncio.get_running_loop()
+        status, data = await loop.run_in_executor(None, make_request, host, path)
+        temp = re.findall("<span class=\"text-secondary font-semibold text-6xl inline-block\">([^<]+)</span>", data)[0]
+        temp = html.unescape(temp)
+        rain = re.findall("<span class=\"text-md\">([^<]+)</span>", data)[1]
+        self.set_data("AMS", f"{temp}C {rain}mm".replace(",", "."))
+
+
 class Writer:
     def print_line(self, txt: str):
         self._print(txt)
@@ -165,6 +189,7 @@ async def main():
     bar.add_block(DiskBlock(5))
     bar.add_block(VolumeBlock(5))
     bar.add_block(CpuTempBlock(5))
+    bar.add_block(WeatherBlock(300))
 
     bar.start()
     tasks = [asyncio.create_task(obj.run()) for obj in bar.block_list]
