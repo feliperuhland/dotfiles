@@ -22,12 +22,18 @@ class Block:
             await self.update()
             await asyncio.sleep(self.interval)
 
+    def set_data(self, title: str, value: str, value_gray=False) -> None:
+        text = f"<b><span font_stretch='ultraexpanded' foreground='#046E8F'>{title}</span></b> "
+        text += f"<span foreground='#91A3B0'>{value}</span>" if value_gray else f"{value}"
+        full_text= text
+        short_text= text
+        self.data = {"full_text": full_text, "short_text": short_text, "markup": "pango"}
+
 
 class DateBlock(Block):
     async def update(self) -> None:
-        full_text = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
-        short_text = str(datetime.datetime.now().date())
-        self.data = {"full_text": full_text, "short_text": short_text}
+        value = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
+        self.set_data("DATE", value)
 
 class NetworkBlock(Block):
     def __init__(self, interface: str, interval: int = 30):
@@ -38,10 +44,7 @@ class NetworkBlock(Block):
         process = subprocess.run("nmcli c show --active".split(), capture_output=True)
         for net in process.stdout.decode().split("\n")[1:]:
             if net and net.split()[3].upper() == self.interface.upper():
-                text = f"<b><span font_stretch='ultraexpanded' foreground='#046E8F'>{net.split()[3].upper()}</span></b> {net.split()[0]}"
-                full_text= text
-                short_text= text
-                self.data = {"full_text": full_text, "short_text": short_text, "markup": "pango"}
+                self.set_data(net.split()[3].upper(), net.split()[0])
                 break
         else:
             self.data = {}
@@ -60,16 +63,51 @@ class BatteryBlock(Block):
 
         power = int(battery_now * 100 / battery_full)
         status = ""
-        if battery_status == "Discharging":
-            status = "-"
-        elif battery_status == "Charging":
+        if battery_status == "Charging":
             status = "+"
 
-        status
-        text = f"<b><span font_stretch='ultraexpanded' foreground='#046E8F'>BAT</span></b> {status}{power}%"
-        full_text= text
-        short_text= text
-        self.data = {"full_text": full_text, "short_text": short_text, "markup": "pango"}
+        self.set_data("BAT", f"{status}{power}%")
+
+
+class CpuBlock(Block):
+    async def update(self) -> None:
+        process = subprocess.run("vmstat 1 2".split(), capture_output=True)
+        value = 100 - int(process.stdout.decode().split("\n")[3].split()[14])
+        self.set_data("CPU", f"{value}%")
+
+
+class MemoryBlock(Block):
+    async def update(self) -> None:
+        process = subprocess.run("free".split(), capture_output=True)
+        line = process.stdout.decode().split("\n")[1].split()
+        value = int(int(line[2]) * 100 / int(line[1]))
+        self.set_data("MEM", f"{value}%")
+
+
+class DiskBlock(Block):
+    async def update(self) -> None:
+        process = subprocess.run("df".split(), capture_output=True)
+        lines = process.stdout.decode().split("\n")[1:]
+        for line in lines:
+            if line.split()[-1] == "/":
+                value = line.split()[-2]
+                self.set_data("DISK", f"{value}")
+                break
+
+
+class VolumeBlock(Block):
+    async def update(self) -> None:
+        process = subprocess.run("pactl get-sink-mute @DEFAULT_SINK@".split(), capture_output=True)
+        if process.stdout.decode().split()[-1] == "yes":
+            self.set_data("VOL", f"-", value_gray=True)
+            return
+
+        process = subprocess.run("pactl get-sink-volume @DEFAULT_SINK@".split(), capture_output=True)
+        try:
+            value = max([int(x.replace("%", "")) for x in process.stdout.decode().split("\n")[0].split()[4:12:7]])
+            self.set_data("VOL", f"{value}%")
+        except:
+            pass
 
 
 class Writer:
@@ -114,6 +152,10 @@ async def main():
     bar.add_block(DateBlock(1))
     bar.add_block(NetworkBlock("wlan0", 5))
     bar.add_block(BatteryBlock(3))
+    bar.add_block(CpuBlock(5))
+    bar.add_block(MemoryBlock(5))
+    bar.add_block(DiskBlock(5))
+    bar.add_block(VolumeBlock(5))
 
     bar.start()
     tasks = [asyncio.create_task(obj.run()) for obj in bar.block_list]
