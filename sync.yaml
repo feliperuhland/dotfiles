@@ -23,7 +23,6 @@
         - .config/i3
         - .config/i3status
         - .config/dunst
-        - .config/polybar
 
     - name: Generate config file with templates
       template:
@@ -35,7 +34,6 @@
         - { src: "i3status-config", dst: ".config/i3status/config"}
         - { src: "zsh-config", dst: ".zshrc"}
         - { src: "dunst-config", dst: ".config/dunst/dunstrc"}
-        - { src: "polybar-config", dst: ".config/polybar/config.ini"}
 
     - name: Generate sync executable file with templates
       template:
@@ -44,8 +42,6 @@
         mode: "0755"
       loop:
         - { src: "sync", dst: "dotfiles"}
-        - { src: "weather", dst: "polybar_weather"}
-        - { src: "euro", dst: "polybar_euro"}
         - { src: "myi3statusbar", dst: "myi3statusbar"}
-    - name: Restart polybar
-      ansible.builtin.command: polybar-msg cmd restart
+    - name: Restart i3
+      ansible.builtin.command: i3-msg restart

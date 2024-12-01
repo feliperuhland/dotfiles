@@ -28,6 +28,7 @@ class Block:
     def __init__(self, interval: int = 30) -> None:
         self.interval = interval
         self.data = {}
+        self.alert = False
 
     async def update(self):
         """Override this method in subclasses for specific behavior."""
@@ -39,18 +40,32 @@ class Block:
             await self.update()
             await asyncio.sleep(self.interval)
 
-    def set_data(self, title: str, value: str, value_gray=False) -> None:
+    def get_name(self) -> str:
+        return self.__class__.__name__.lower().replace("block", "")
+
+    def set_data(self, title: str, value: str, value_gray=False, min_width=None) -> None:
         text = f"<b><span font_stretch='ultraexpanded' foreground='#046E8F'>{title}</span></b> "
         text += f"<span foreground='#91A3B0'>{value}</span>" if value_gray else f"{value}"
         full_text= text
         short_text= text
-        self.data = {"full_text": full_text, "short_text": short_text, "markup": "pango"}
+        self.data = {
+            "full_text": full_text,
+            "short_text": short_text,
+            "markup": "pango",
+            "name": self.get_name(),
+        }
+        if min_width:
+            self.data["min_width"] = min_width
+
+    async def click(self, data: dict) -> None:
+        pass
 
 
 class DateBlock(Block):
     async def update(self) -> None:
         value = datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
         self.set_data("DATE", value)
+
 
 class NetworkBlock(Block):
     def __init__(self, interface: str, interval: int = 30):
@@ -65,6 +80,15 @@ class NetworkBlock(Block):
                 break
         else:
             self.data = {}
+
+    async def click(self, data: dict) -> None:
+        if data["button"] == 1:
+            process = subprocess.run(f"nmcli -g IP4.ADDRESS device show {self.interface}".split(), capture_output=True)
+            value = process.stdout.decode().split()[0]
+            subprocess.run(["notify-send", self.interface, value])
+
+        if data["button"] == 1:
+            subprocess.run(f"nmcli device down {self.interface}".split())
 
 
 class BatteryBlock(Block):
@@ -84,13 +108,17 @@ class BatteryBlock(Block):
             status = "+"
 
         self.set_data("BAT", f"{status}{power}%")
+        if power < 15 and battery_status == "Discharging":
+            self.alert = True
+        else:
+            self.alert = False
 
 
 class CpuBlock(Block):
     async def update(self) -> None:
         process = subprocess.run("vmstat 1 2".split(), capture_output=True)
         value = 100 - int(process.stdout.decode().split("\n")[3].split()[14])
-        self.set_data("CPU", f"{value}%")
+        self.set_data("CPU", f"{value}%", min_width="CPU 10%")
 
 
 class MemoryBlock(Block):
@@ -116,7 +144,7 @@ class VolumeBlock(Block):
     async def update(self) -> None:
         process = subprocess.run("pactl get-sink-mute @DEFAULT_SINK@".split(), capture_output=True)
         if process.stdout.decode().split()[-1] == "yes":
-            self.set_data("VOL", f"-", value_gray=True)
+            self.set_data("VOL", f"muted", value_gray=True)
             return
 
         process = subprocess.run("pactl get-sink-volume @DEFAULT_SINK@".split(), capture_output=True)
@@ -125,6 +153,18 @@ class VolumeBlock(Block):
             self.set_data("VOL", f"{value}%")
         except:
             pass
+
+    async def click(self, data: dict) -> None:
+        cmd = ""
+        if data["button"] == 1:
+            cmd = "pactl set-sink-volume @DEFAULT_SINK@ +5%"
+        elif data["button"] == 2:
+            cmd = "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+        elif data["button"] == 3:
+            cmd = "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+
+        subprocess.run(cmd.split())
+        await self.update()
 
 
 class CpuTempBlock(Block):
@@ -145,8 +185,7 @@ class WeatherBlock(Block):
             temp = html.unescape(temp)
             rain = re.findall("<span class=\"text-md\">([^<]+)</span>", data)[1]
             self.set_data("AMS", f"{temp}C {rain}mm".replace(",", "."))
-        except Exception as e:
-            print(e)
+        except:
             self.set_data("AMS", "-", value_gray=True)
 
 
@@ -160,9 +199,32 @@ class EuroBlock(Block):
             data = await loop.run_in_executor(None, make_request, host, path, headers)
             value = re.findall("<span class=\"text-success\">([^<]+)</span>", data)[0]
             self.set_data("EURO", value.replace(",", "."))
-        except Exception as e:
-            print(e)
+        except:
             self.set_data("EURO", "-", value_gray=True)
+
+
+class AlertBlock(Block):
+    def __init__(self, interval: int, bar_instance) -> None:
+        super().__init__(interval)
+        self.bar_instance = bar_instance
+
+    def set_alert_format(self, alert: str) -> str:
+        return f"<span font_stretch='ultraexpanded' background='#046E8F'> {alert} </span>"
+
+    async def update(self) -> None:
+        full_text = ""
+
+        battery = self.bar_instance.get_block("battery")
+        if battery.alert is True:
+            full_text += self.set_alert_format("BATTERY")
+
+        self.data = {
+            "full_text": full_text,
+            "markup": "pango",
+            "name": self.get_name(),
+            "align": "left",
+            "min_width": 700,
+        }
 
 
 class Writer:
@@ -181,7 +243,7 @@ class Bar:
     def __init__(self, writer: Writer) -> None:
         self.writer = writer
         self.block_list = []
-        self.headers = {"version": 1}
+        self.headers = {"version": 1, "click_events": True}
 
     def add_block(self, block: Block) -> None:
         self.block_list.append(block)
@@ -189,6 +251,28 @@ class Bar:
     def start(self):
         self.writer.print_line(json.dumps(self.headers))
         self.writer.print_line("[")
+
+    def get_block(self, name: str) -> Block | None:
+        for block in self.block_list:
+            if block.__class__.__name__.lower().replace("block", "") == name:
+                return block
+
+    async def input(self):
+        while True:
+            line = await asyncio.to_thread(input)
+            if line == "[":
+                continue
+
+            if line[0] == ",":
+                line = line[1:]
+
+            try:
+                data = json.loads(line)
+                block = self.get_block(data["name"])
+                if block is not None:
+                    await block.click(data)
+            except Exception as e:
+                subprocess.run(["notify-send", str(e)])
 
     async def update(self):
         while True:
@@ -205,19 +289,20 @@ async def main():
     w = Writer()
     bar = Bar(w)
     bar.add_block(DateBlock(1))
-    bar.add_block(NetworkBlock("wlan0", 5))
-    bar.add_block(BatteryBlock(3))
-    bar.add_block(CpuBlock(5))
-    bar.add_block(MemoryBlock(5))
-    bar.add_block(DiskBlock(5))
-    bar.add_block(VolumeBlock(5))
-    bar.add_block(CpuTempBlock(5))
-    bar.add_block(WeatherBlock(300))
-    bar.add_block(EuroBlock(300))
+    bar.add_block(NetworkBlock("wlan0", 3))
+    bar.add_block(BatteryBlock(2))
+    bar.add_block(CpuBlock(3))
+    bar.add_block(MemoryBlock(3))
+    bar.add_block(DiskBlock(3))
+    bar.add_block(VolumeBlock(2))
+    bar.add_block(CpuTempBlock(3))
+    bar.add_block(WeatherBlock(180))
+    bar.add_block(EuroBlock(180))
+    bar.add_block(AlertBlock(1, bar))
 
     bar.start()
     tasks = [asyncio.create_task(obj.run()) for obj in bar.block_list]
-    await asyncio.gather(*tasks, asyncio.create_task(bar.update()))
+    await asyncio.gather(*tasks, asyncio.create_task(bar.update()), asyncio.create_task(bar.input()))
 
 
 if __name__ == "__main__":
