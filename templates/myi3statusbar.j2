@@ -30,15 +30,23 @@ class Block:
         self.data = {}
         self.alert = False
 
+    async def config(self):
+        """Override this method in subclasses for specific behavior."""
+        pass
+
     async def update(self):
         """Override this method in subclasses for specific behavior."""
         pass
 
     async def run(self):
         """Runs the update method periodically forever."""
+        await self.config()
         while True:
-            await self.update()
-            await asyncio.sleep(self.interval)
+            try:
+                await self.update()
+                await asyncio.sleep(self.interval)
+            except Exception as e:
+                subprocess.run(["notify-send", str(e)])
 
     def get_name(self) -> str:
         return self.__class__.__name__.lower().replace("block", "")
@@ -87,16 +95,22 @@ class NetworkBlock(Block):
             value = process.stdout.decode().split()[0]
             subprocess.run(["notify-send", self.interface, value])
 
-        if data["button"] == 1:
+        if data["button"] == 3:
             subprocess.run(f"nmcli device down {self.interface}".split())
 
 
 class BatteryBlock(Block):
+    async def config(self) -> None:
+        path = pathlib.Path("/sys/class/power_supply/BAT0/charge_full")
+        self._prefix_file = "energy"
+        if path.exists():
+            self._prefix_file = "charge"
+
     async def update(self) -> None:
-        with open("/sys/class/power_supply/BAT0/energy_full", "r") as f:
+        with open(f"/sys/class/power_supply/BAT0/{self._prefix_file}_full", "r") as f:
             battery_full = int(f.read().strip())
 
-        with open("/sys/class/power_supply/BAT0/energy_now", "r") as f:
+        with open(f"/sys/class/power_supply/BAT0/{self._prefix_file}_now", "r") as f:
             battery_now = int(f.read().strip())
 
         with open("/sys/class/power_supply/BAT0/status", "r") as f:
@@ -289,7 +303,8 @@ async def main():
     w = Writer()
     bar = Bar(w)
     bar.add_block(DateBlock(1))
-    bar.add_block(NetworkBlock("wlan0", 3))
+    bar.add_block(NetworkBlock("{{ config.wlan_interface }}", 3))
+    bar.add_block(NetworkBlock("{{ config.eth_interface }}", 3))
     bar.add_block(BatteryBlock(2))
     bar.add_block(CpuBlock(3))
     bar.add_block(MemoryBlock(3))
@@ -297,7 +312,9 @@ async def main():
     bar.add_block(VolumeBlock(2))
     bar.add_block(CpuTempBlock(3))
     bar.add_block(WeatherBlock(180))
+{% if config.euro %}
     bar.add_block(EuroBlock(300))
+{% endif %}
     bar.add_block(AlertBlock(1, bar))
 
     bar.start()
