@@ -11,13 +11,17 @@ import subprocess
 import sys
 
 
-def make_request(host, path):
+def make_request(host, path, headers=None):
+    if headers is None:
+        headers = {}
+
+    headers = headers | {"host": host}
     connection = http.client.HTTPSConnection(host)
-    connection.request("GET", path, headers={"host": host})
+    connection.request("GET", path, headers=headers)
     response = connection.getresponse()
     data = response.read().decode()
     connection.close()
-    return response.status, data
+    return data
 
 
 class Block:
@@ -135,11 +139,30 @@ class WeatherBlock(Block):
         host = "www.buienalarm.nl"
         path = "/nederland/amsterdam/5576"
         loop = asyncio.get_running_loop()
-        status, data = await loop.run_in_executor(None, make_request, host, path)
-        temp = re.findall("<span class=\"text-secondary font-semibold text-6xl inline-block\">([^<]+)</span>", data)[0]
-        temp = html.unescape(temp)
-        rain = re.findall("<span class=\"text-md\">([^<]+)</span>", data)[1]
-        self.set_data("AMS", f"{temp}C {rain}mm".replace(",", "."))
+        try:
+            data = await loop.run_in_executor(None, make_request, host, path)
+            temp = re.findall("<span class=\"text-secondary font-semibold text-6xl inline-block\">([^<]+)</span>", data)[0]
+            temp = html.unescape(temp)
+            rain = re.findall("<span class=\"text-md\">([^<]+)</span>", data)[1]
+            self.set_data("AMS", f"{temp}C {rain}mm".replace(",", "."))
+        except Exception as e:
+            print(e)
+            self.set_data("AMS", "-", value_gray=True)
+
+
+class EuroBlock(Block):
+    async def update(self) -> None:
+        host = "wise.com"
+        path = "/br/currency-converter/eur-to-brl-rate"
+        headers = {"User-Agent": "curl/7.81.0", "Accept": "*/*"}
+        loop = asyncio.get_running_loop()
+        try:
+            data = await loop.run_in_executor(None, make_request, host, path, headers)
+            value = re.findall("<span class=\"text-success\">([^<]+)</span>", data)[0]
+            self.set_data("EURO", value.replace(",", "."))
+        except Exception as e:
+            print(e)
+            self.set_data("EURO", "-", value_gray=True)
 
 
 class Writer:
@@ -190,6 +213,7 @@ async def main():
     bar.add_block(VolumeBlock(5))
     bar.add_block(CpuTempBlock(5))
     bar.add_block(WeatherBlock(300))
+    bar.add_block(EuroBlock(300))
 
     bar.start()
     tasks = [asyncio.create_task(obj.run()) for obj in bar.block_list]
