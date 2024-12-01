@@ -3,6 +3,7 @@
 import asyncio
 import datetime
 import json
+import pathlib
 import subprocess
 import sys
 
@@ -110,6 +111,13 @@ class VolumeBlock(Block):
             pass
 
 
+class CpuTempBlock(Block):
+    async def update(self) -> None:
+        p = pathlib.Path("/sys/devices/platform/coretemp.0/hwmon") 
+        value = int(int(list(p.walk())[1][0].joinpath("temp1_input").open().read().strip()) / 1000)
+        self.set_data("TEMP", f"{value}°C")
+
+
 class Writer:
     def print_line(self, txt: str):
         self._print(txt)
@@ -156,6 +164,7 @@ async def main():
     bar.add_block(MemoryBlock(5))
     bar.add_block(DiskBlock(5))
     bar.add_block(VolumeBlock(5))
+    bar.add_block(CpuTempBlock(5))
 
     bar.start()
     tasks = [asyncio.create_task(obj.run()) for obj in bar.block_list]
