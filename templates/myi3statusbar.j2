@@ -221,7 +221,8 @@ class UpdateBlock(Block):
     async def update(self) -> None:
         process = subprocess.run("pacman -Qu".split(), capture_output=True)
         value = int(process.stdout.decode().count("\n"))
-        self.set_data("PKG", value)
+        if value > 0:
+            self.set_data("PKG", str(value))
 
 
 
