@@ -217,6 +217,14 @@ class EuroBlock(Block):
             self.set_data("EURO", "-", value_gray=True)
 
 
+class UpdateBlock(Block):
+    async def update(self) -> None:
+        process = subprocess.run("pacman -Qu".split(), capture_output=True)
+        value = int(process.stdout.decode().count("\n"))
+        self.set_data("PKG", value)
+
+
+
 class AlertBlock(Block):
     def __init__(self, interval: int, bar_instance) -> None:
         super().__init__(interval)
@@ -232,12 +240,15 @@ class AlertBlock(Block):
         if battery.alert is True:
             full_text += self.set_alert_format("BATTERY")
 
+        p = subprocess.run(["lsof"] + [str(x) for x in pathlib.Path("/dev/").iterdir() if x.name.startswith("video")], capture_output=True)
+        if p.stdout:
+            full_text += self.set_alert_format("CAMERA")
+
         self.data = {
             "full_text": full_text,
             "markup": "pango",
             "name": self.get_name(),
             "align": "left",
-            "min_width": 700,
         }
 
 
@@ -312,6 +323,7 @@ async def main():
     bar.add_block(VolumeBlock(2))
     bar.add_block(CpuTempBlock(3))
     bar.add_block(WeatherBlock(180))
+    bar.add_block(UpdateBlock(300))
 {% if config.euro %}
     bar.add_block(EuroBlock(300))
 {% endif %}
