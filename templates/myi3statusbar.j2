@@ -68,6 +68,9 @@ class Block:
     async def click(self, data: dict) -> None:
         pass
 
+    def notify(self, title: str, text: str) -> None:
+        subprocess.run(["notify-send", title, text])
+
 
 class DateBlock(Block):
     async def update(self) -> None:
