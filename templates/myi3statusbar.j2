@@ -55,10 +55,8 @@ class Block:
         text = f"<b><span font_stretch='ultraexpanded' foreground='#046E8F'>{title}</span></b> "
         text += f"<span foreground='#91A3B0'>{value}</span>" if value_gray else f"{value}"
         full_text= text
-        short_text= text
         self.data = {
             "full_text": full_text,
-            "short_text": short_text,
             "markup": "pango",
             "name": self.get_name(),
         }
@@ -83,11 +81,15 @@ class NetworkBlock(Block):
         self.interface = interface
         super().__init__(interval)
 
+    def get_name(self) -> str:
+        return self.__class__.__name__.lower().replace("block", "") + f"_{self.interface}"
+
     async def update(self):
         process = subprocess.run("nmcli c show --active".split(), capture_output=True)
-        for net in process.stdout.decode().split("\n")[1:]:
-            if net and net.split()[3].upper() == self.interface.upper():
-                self.set_data(net.split()[3].upper(), net.split()[0])
+        for net in process.stdout.decode().strip().split("\n")[1:]:
+            i =  net.strip().split()[-1]
+            if net and i.upper() == self.interface.upper():
+                self.set_data(i.upper(), net.split()[0])
                 break
         else:
             self.data = {}
@@ -221,9 +223,23 @@ class EuroBlock(Block):
 
 
 class UpdateBlock(Block):
+    async def config(self):
+        process = subprocess.run("cat /etc/os-release".split(), capture_output=True)
+        data = {k:v for k, v in [x.split("=") for x in process.stdout.decode().strip().split("\n")]}
+        self._system = data["NAME"].strip('"')
+
     async def update(self) -> None:
-        process = subprocess.run("pacman -Qu".split(), capture_output=True)
+        if self._system == "Arch Linux":
+            process = subprocess.run("pacman -Qu".split(), capture_output=True)
+        elif self._system == "Ubuntu":
+            process = subprocess.run("apt list --upgradable".split(), capture_output=True)
+        else:
+            return
+
         value = int(process.stdout.decode().count("\n"))
+        if self._system == "Ubuntu":
+            value -= 1
+
         if value > 0:
             self.set_data("PKG", str(value))
 
