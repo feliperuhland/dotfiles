@@ -15,7 +15,7 @@ bindkey -v
 #alias
 alias ll="ls -lah --color=auto"
 alias tt="tree -aI .git"
-aliass v="nvim"
+alias v="nvim"
 
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
@@ -73,3 +73,5 @@ compinit
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 eval "$(direnv hook zsh)"
+
+[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
