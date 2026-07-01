@@ -1,0 +1,83 @@
+{
+    "layer": "top",
+    "position": "top",
+    "modules-left": ["sway/workspaces", "sway/mode"],
+    "modules-center": ["clock"],
+    "modules-right": [
+        "network#eth",
+        "network#wlan",
+        "battery",
+        "cpu",
+        "memory",
+        "disk",
+        "temperature",
+        "pulseaudio",
+        "custom/updates",
+        "tray"
+    ],
+    "sway/workspaces": {
+        "disable-scroll": true
+    },
+    "sway/mode": {
+        "format": "<span style=\"italic\">{}</span>"
+    },
+    "clock": {
+        "format": "{:%Y-%m-%d %H:%M:%S}",
+        "interval": 1,
+        "tooltip": false
+    },
+    "network#wlan": {
+        "interface": "{{ config.wlan_interface }}",
+        "format-wifi": "WLAN {essid}",
+        "format-disconnected": "",
+        "tooltip-format": "{ipaddr}",
+        "on-click": "foot -e nmtui"
+    },
+    "network#eth": {
+        "interface": "{{ config.eth_interface }}",
+        "format-ethernet": "ETH {ipaddr}",
+        "format-disconnected": "",
+        "tooltip": false
+    },
+    "battery": {
+        "format": "BAT {capacity}%",
+        "format-charging": "BAT +{capacity}%",
+        "interval": 2,
+        "tooltip": false
+    },
+    "cpu": {
+        "format": "CPU {usage}%",
+        "interval": 3,
+        "tooltip": false
+    },
+    "memory": {
+        "format": "MEM {percentage}%",
+        "interval": 3,
+        "tooltip": false
+    },
+    "disk": {
+        "format": "DISK {percentage_used}%",
+        "interval": 30,
+        "tooltip": false
+    },
+    "temperature": {
+        "hwmon-path": "/sys/devices/platform/coretemp.0/hwmon/hwmon{{ config.hwmon }}/temp1_input",
+        "format": "TEMP {temperatureC}°C",
+        "interval": 3,
+        "tooltip": false
+    },
+    "pulseaudio": {
+        "format": "VOL {volume}%",
+        "format-muted": "VOL muted",
+        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "tooltip": false
+    },
+    "custom/updates": {
+        "exec": "pacman -Qu 2>/dev/null | wc -l | xargs -I{} sh -c 'if [ {} -gt 0 ]; then echo \"PKG {}\"; fi'",
+        "interval": 300,
+        "tooltip": false
+    },
+    "tray": {
+        "spacing": 8
+    }
+}

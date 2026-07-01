@@ -1,0 +1,57 @@
+* {
+    font-family: monospace;
+    font-size: 12px;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    min-height: 0;
+}
+
+window#waybar {
+    background-color: #{{ config.colors.bg }};
+    color: #{{ config.colors.fg }};
+}
+
+#workspaces button {
+    padding: 0 6px;
+    color: #{{ config.colors.dim }};
+    background: transparent;
+}
+
+#workspaces button.focused {
+    color: #{{ config.colors.fg }};
+}
+
+#workspaces button:hover {
+    background: #1e1e1e;
+    color: #888888;
+}
+
+#mode,
+#clock,
+#network,
+#battery,
+#cpu,
+#memory,
+#disk,
+#temperature,
+#pulseaudio,
+#custom-updates,
+#tray {
+    padding: 0 8px;
+    color: #{{ config.colors.fg }};
+}
+
+#clock {
+    font-weight: bold;
+}
+
+#battery.critical:not(.charging),
+#temperature.critical {
+    background-color: #{{ config.colors.critical_bg }};
+}
+
+#tray {
+    padding: 0 4px;
+}

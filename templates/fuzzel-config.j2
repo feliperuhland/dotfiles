@@ -1,0 +1,26 @@
+[main]
+font=monospace:size=12
+dpi-aware=auto
+prompt="> "
+terminal=foot -e
+width=40
+lines=10
+letter-spacing=0
+line-height=20
+horizontal-pad=10
+vertical-pad=8
+
+[colors]
+background={{ config.colors.bg }}ff
+text={{ config.colors.fg }}ff
+match=ffffffff
+selection={{ config.colors.fg }}ff
+selection-text={{ config.colors.bg }}ff
+border={{ config.colors.dim }}ff
+
+[border]
+width=1
+radius=6
+
+[dmenu]
+mode=text

@@ -1,8 +1,14 @@
 ---
 config:
   background: ""
-  pwd: "{{ lookup('env', 'PWD') }}"
-  copilot: false
-  polybar_options: ""
   hwmon: 1
+  wlan_interface: wlan0
+  eth_interface: eth0
   euro: false
+  lock_timeout: 300
+  screen_off_timeout: 600
+  colors:
+    bg: "0f0f0f"
+    fg: "e8e8e8"
+    dim: "555555"
+    critical_bg: "1a0a0a"

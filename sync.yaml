@@ -3,9 +3,14 @@
   vars_files:
     - local_config.yaml
   tasks:
-    - name: HOME synlink
+    - name: Create generated directory
       ansible.builtin.file:
-        src: "$PWD/{{ item }}"
+        path: "{{ playbook_dir }}/generated"
+        state: directory
+
+    - name: HOME symlinks
+      ansible.builtin.file:
+        src: "{{ playbook_dir }}/{{ item }}"
         dest: "~/{{ item }}"
         state: link
       loop:
@@ -14,34 +19,48 @@
 
     - name: Create necessary directories
       ansible.builtin.file:
-        path: "$HOME/{{ item }}"
+        path: "~/{{ item }}"
         state: directory
       loop:
         - .vim/swap_files
         - .vim/backup_files
         - .vim/undo_files
-        - .config/i3
-        - .config/i3status
-        - .config/dunst
+        - .config/sway
+        - .config/waybar
+        - .config/mako
+        - .config/fuzzel
+        - .config/foot
+        - .local/bin
 
-    - name: Generate config file with templates
+    - name: Generate config files into generated/
       template:
-        src: templates/{{ item.src }}.j2
-        dest: "$HOME/{{ item.dst }}"
+        src: "templates/{{ item.src }}.j2"
+        dest: "{{ playbook_dir }}/generated/{{ item.name }}"
       loop:
-        - { src: "vim-config", dst: ".vimrc"}
-        - { src: "i3-config", dst: ".config/i3/config"}
-        - { src: "i3status-config", dst: ".config/i3status/config"}
-        - { src: "zsh-config", dst: ".zshrc"}
-        - { src: "dunst-config", dst: ".config/dunst/dunstrc"}
+        - { src: "vim-config",     name: "vimrc" }
+        - { src: "sway-config",    name: "sway-config" }
+        - { src: "waybar-config",  name: "waybar-config" }
+        - { src: "waybar-style",   name: "waybar-style.css" }
+        - { src: "mako-config",    name: "mako-config" }
+        - { src: "zsh-config",     name: "zshrc" }
+        - { src: "fuzzel-config",  name: "fuzzel.ini" }
+        - { src: "foot-config",    name: "foot.ini" }
 
-    - name: Generate sync executable file with templates
-      template:
-        src: templates/{{ item.src }}.j2
-        dest: "/home/$USER/.local/bin/{{ item.dst }}"
-        mode: "0755"
+    - name: Symlink generated configs to HOME
+      ansible.builtin.file:
+        src: "{{ playbook_dir }}/generated/{{ item.name }}"
+        dest: "~/{{ item.dst }}"
+        state: link
       loop:
-        - { src: "sync", dst: "dotfiles"}
-        - { src: "myi3statusbar", dst: "myi3statusbar"}
-    - name: Restart i3
-      ansible.builtin.command: i3-msg restart
+        - { name: "vimrc",            dst: ".vimrc" }
+        - { name: "sway-config",      dst: ".config/sway/config" }
+        - { name: "waybar-config",    dst: ".config/waybar/config" }
+        - { name: "waybar-style.css", dst: ".config/waybar/style.css" }
+        - { name: "mako-config",      dst: ".config/mako/config" }
+        - { name: "zshrc",            dst: ".zshrc" }
+        - { name: "fuzzel.ini",       dst: ".config/fuzzel/fuzzel.ini" }
+        - { name: "foot.ini",         dst: ".config/foot/foot.ini" }
+
+    - name: Reload sway
+      ansible.builtin.command: swaymsg reload
+      ignore_errors: true

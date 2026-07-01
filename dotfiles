@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+REPO=$(dirname "$(realpath "$0")")
+
+install_dotfiles() {
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$REPO/dotfiles" "$HOME/.local/bin/dotfiles"
+    echo "Installed: $HOME/.local/bin/dotfiles -> $REPO/dotfiles"
+}
+
+sync_dotfiles() {
+    ansible-playbook "$REPO/sync.yaml"
+}
+
+case "${1:-sync}" in
+    install) install_dotfiles ;;
+    sync)    sync_dotfiles ;;
+    *)       echo "Usage: dotfiles [install|sync]"; exit 1 ;;
+esac
