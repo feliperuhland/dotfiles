@@ -5,6 +5,7 @@ config:
   wlan_interface: wlan0
   eth_interface: eth0
   euro: false
+  copilot: false
   lock_timeout: 300
   screen_off_timeout: 600
   colors:
