@@ -64,6 +64,18 @@
         - { name: "foot.ini",         dst: ".config/foot/foot.ini" }
         - { name: "kanshi-config",    dst: ".config/kanshi/config" }
 
+    - name: Symlink check-drift script to ~/.local/bin
+      ansible.builtin.file:
+        src: "{{ playbook_dir }}/check-drift"
+        dest: "~/.local/bin/check-drift"
+        state: link
+
+    - name: Install dotfiles drift-check cron job
+      ansible.builtin.cron:
+        name: "dotfiles drift check"
+        minute: "*/15"
+        job: "$HOME/.local/bin/check-drift"
+
     - name: Reload sway
       ansible.builtin.command: swaymsg reload
       ignore_errors: true

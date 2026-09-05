@@ -38,3 +38,4 @@ dotfiles        Entry point script
 - kanshi
 - brightnessctl, playerctl, pactl
 - grim, slurp
+- cronie (or another cron implementation), libnotify (notify-send)

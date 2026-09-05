@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+REPO=$(dirname "$(realpath "$0")")
+STATE_FILE="$HOME/.cache/dotfiles-drift-state"
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
+
+mkdir -p "$(dirname "$STATE_FILE")"
+
+OUTPUT=$(cd "$REPO" && ansible-playbook sync.yaml --check --diff 2>&1) || true
+CHANGED=$(printf '%s\n' "$OUTPUT" | grep -oE 'changed=[0-9]+' | tail -1 | cut -d= -f2)
+CHANGED=${CHANGED:-0}
+
+PREV=0
+[ -f "$STATE_FILE" ] && PREV=$(cat "$STATE_FILE")
+
+if [ "$CHANGED" -gt 0 ] && [ "$PREV" = 0 ]; then
+    notify-send -u normal "dotfiles out of sync" "Generated configs differ from templates/local_config.yaml, run 'dotfiles' to apply."
+fi
+
+echo "$CHANGED" > "$STATE_FILE"
