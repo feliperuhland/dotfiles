@@ -46,6 +46,23 @@ window#waybar {
     color: #{{ config.colors.fg }};
 }
 
+#mode::before,
+#clock::before,
+#network::before,
+#battery::before,
+#cpu::before,
+#memory::before,
+#disk::before,
+#temperature::before,
+#pulseaudio::before,
+#custom-updates::before,
+#custom-weather::before,
+#custom-euro::before {
+    content: "|";
+    color: #{{ config.colors.dim }};
+    margin-right: 8px;
+}
+
 #clock {
     font-weight: bold;
 }
