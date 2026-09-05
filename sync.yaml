@@ -30,6 +30,7 @@
         - .config/mako
         - .config/fuzzel
         - .config/foot
+        - .config/kanshi
         - .local/bin
 
     - name: Generate config files into generated/
@@ -45,6 +46,7 @@
         - { src: "zsh-config",     name: "zshrc" }
         - { src: "fuzzel-config",  name: "fuzzel.ini" }
         - { src: "foot-config",    name: "foot.ini" }
+        - { src: "kanshi-config",  name: "kanshi-config" }
 
     - name: Symlink generated configs to HOME
       ansible.builtin.file:
@@ -60,6 +62,7 @@
         - { name: "zshrc",            dst: ".zshrc" }
         - { name: "fuzzel.ini",       dst: ".config/fuzzel/fuzzel.ini" }
         - { name: "foot.ini",         dst: ".config/foot/foot.ini" }
+        - { name: "kanshi-config",    dst: ".config/kanshi/config" }
 
     - name: Reload sway
       ansible.builtin.command: swaymsg reload

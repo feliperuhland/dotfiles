@@ -1,0 +1,16 @@
+profile "undocked" {
+    output {{ config.monitors.laptop_output }} mode {{ config.monitors.laptop_resolution }} position 0,0
+}
+
+profile "docked" {
+    output {{ config.monitors.laptop_output }} disable
+{% for m in config.monitors.docked_outputs %}
+    output {{ m.name }} mode {{ m.resolution }} position {{ m.position }}{% if m.transform is defined %} transform {{ m.transform }}{% endif %}
+
+{% endfor %}
+{% for m in config.monitors.docked_outputs %}
+{% if m.primary is defined and m.primary %}
+    exec swaymsg focus output {{ m.name }}
+{% endif %}
+{% endfor %}
+}

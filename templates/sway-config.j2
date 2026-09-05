@@ -147,6 +147,8 @@ exec dotfiles
 
 exec mako
 
+exec kanshi
+
 exec swayidle -w \
     timeout {{ config.screen_off_timeout }} 'swaymsg "output * dpms off"' \
     resume 'swaymsg "output * dpms on"'

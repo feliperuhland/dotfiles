@@ -13,3 +13,11 @@ config:
     dim: "555555"
     critical_bg: "1a0a0a"
     critical_fg: "ff0000"
+  monitors:
+    laptop_output: eDP-1
+    laptop_resolution: "1920x1080"
+    docked_outputs:
+      - name: DP-1
+        resolution: "1920x1080"
+        position: "0,0"
+        primary: true
