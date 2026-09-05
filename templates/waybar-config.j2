@@ -1,6 +1,13 @@
+{% set ns = namespace(primary_output=config.monitors.laptop_output) %}
+{% for m in config.monitors.docked_outputs %}
+{% if m.primary is defined and m.primary %}
+{% set ns.primary_output = m.name %}
+{% endif %}
+{% endfor %}
 {
     "layer": "top",
     "position": "top",
+    "output": ["{{ config.monitors.laptop_output }}", "{{ ns.primary_output }}"],
     "modules-left": ["sway/workspaces", "sway/mode"],
     "modules-center": ["clock"],
     "modules-right": [
@@ -16,7 +23,8 @@
         "tray"
     ],
     "sway/workspaces": {
-        "disable-scroll": true
+        "disable-scroll": true,
+        "all-outputs": true
     },
     "sway/mode": {
         "format": "<span style=\"italic\">{}</span>"
