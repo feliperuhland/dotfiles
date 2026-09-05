@@ -33,12 +33,22 @@
         - .config/kanshi
         - .local/bin
 
+    - name: Check current ~/.config/nvim
+      ansible.builtin.stat:
+        path: "~/.config/nvim"
+      register: nvim_dest
+
+    - name: Remove pre-existing real nvim config directory (one-time)
+      ansible.builtin.file:
+        path: "~/.config/nvim"
+        state: absent
+      when: nvim_dest.stat.exists and not nvim_dest.stat.islnk
+
     - name: Symlink nvim config directory
       ansible.builtin.file:
         src: "{{ playbook_dir }}/nvim"
         dest: "~/.config/nvim"
         state: link
-        force: true
 
     - name: Generate config files into generated/
       template:
