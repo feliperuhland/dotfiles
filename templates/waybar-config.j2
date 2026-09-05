@@ -8,8 +8,8 @@
     "layer": "top",
     "position": "top",
     "output": ["{{ config.monitors.laptop_output }}", "{{ ns.primary_output }}"],
-    "modules-left": ["custom/os"],
-    "modules-center": ["sway/workspaces", "sway/mode"],
+    "modules-left": ["custom/os", "sway/workspaces", "sway/mode"],
+    "modules-center": [],
     "modules-right": [
         "network#eth",
         "network#wlan",
@@ -28,7 +28,7 @@
         "clock"
     ],
     "custom/os": {
-        "exec": "echo \"arch|$(uname -r)\"",
+        "exec": "echo 'arch<span color=\"#{{ config.colors.dim }}\">|</span>'$(uname -r)",
         "interval": "once",
         "tooltip": false
     },
