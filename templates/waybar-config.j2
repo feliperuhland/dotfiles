@@ -37,29 +37,29 @@
         "all-outputs": true
     },
     "sway/mode": {
-        "format": "<span style=\"italic\">{}</span>"
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> <span style=\"italic\">{}</span>"
     },
     "clock": {
-        "format": "{:%Y-%m-%d %H:%M:%S}",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> {:%Y-%m-%d %H:%M:%S}",
         "interval": 1,
         "tooltip": false
     },
     "network#wlan": {
         "interface": "{{ config.wlan_interface }}",
-        "format-wifi": "wlan {essid}",
+        "format-wifi": "<span color=\"#{{ config.colors.dim }}\">|</span> wlan {essid}",
         "format-disconnected": "",
         "tooltip-format": "{ipaddr}",
         "on-click": "foot -e nmtui"
     },
     "network#eth": {
         "interface": "{{ config.eth_interface }}",
-        "format-ethernet": "eth {ipaddr}",
+        "format-ethernet": "<span color=\"#{{ config.colors.dim }}\">|</span> eth {ipaddr}",
         "format-disconnected": "",
         "tooltip": false
     },
     "battery": {
-        "format": "bat {capacity}%",
-        "format-charging": "bat +{capacity}%",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> bat {capacity}%",
+        "format-charging": "<span color=\"#{{ config.colors.dim }}\">|</span> bat +{capacity}%",
         "interval": 2,
         "states": {
             "critical": 15
@@ -67,45 +67,48 @@
         "tooltip": false
     },
     "cpu": {
-        "format": "cpu {usage}%",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> cpu {usage}%",
         "interval": 3,
         "tooltip": false
     },
     "memory": {
-        "format": "ram {percentage}%",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> ram {percentage}%",
         "interval": 3,
         "tooltip": false
     },
     "disk": {
-        "format": "disk {percentage_used}%",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> disk {percentage_used}%",
         "interval": 30,
         "tooltip": false
     },
     "temperature": {
         "hwmon-path": "/sys/devices/platform/coretemp.0/hwmon/hwmon{{ config.hwmon }}/temp1_input",
-        "format": "temp {temperatureC}°C",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> temp {temperatureC}°C",
         "interval": 3,
         "tooltip": false
     },
     "pulseaudio": {
-        "format": "vol {volume}%",
-        "format-muted": "vol muted",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> vol {volume}%",
+        "format-muted": "<span color=\"#{{ config.colors.dim }}\">|</span> vol muted",
         "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
         "tooltip": false
     },
     "custom/updates": {
         "exec": "pacman -Qu 2>/dev/null | wc -l | xargs -I{} sh -c 'if [ {} -gt 0 ]; then echo \"pkg {}\"; fi'",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> {}",
         "interval": 300,
         "tooltip": false
     },
     "custom/weather": {
         "exec": "$HOME/.local/bin/weather",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> {}",
         "interval": 900,
         "tooltip": false
     },
 {% if config.euro %}
     "custom/euro": {
         "exec": "$HOME/.local/bin/euro",
+        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> {}",
         "interval": 300,
         "tooltip": false
     },
