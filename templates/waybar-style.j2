@@ -47,9 +47,21 @@ window#waybar {
     font-weight: bold;
 }
 
-#battery.critical:not(.charging),
 #temperature.critical {
     background-color: #{{ config.colors.critical_bg }};
+}
+
+#battery.critical:not(.charging) {
+    color: #{{ config.colors.critical_fg }};
+    background-color: #{{ config.colors.critical_bg }};
+    animation: blink-red 1s linear infinite alternate;
+}
+
+@keyframes blink-red {
+    to {
+        background-color: #{{ config.colors.critical_fg }};
+        color: #{{ config.colors.bg }};
+    }
 }
 
 #tray {

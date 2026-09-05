@@ -148,7 +148,9 @@ exec dotfiles
 exec mako
 
 exec swayidle -w \
-    timeout {{ config.lock_timeout }} 'swaylock -f -c 000000' \
     timeout {{ config.screen_off_timeout }} 'swaymsg "output * dpms off"' \
-    resume 'swaymsg "output * dpms on"' \
-    before-sleep 'swaylock -f -c 000000'
+    resume 'swaymsg "output * dpms on"'
+
+exec systemctl --user start xdg-desktop-portal-wlr
+
+xwayland enable
