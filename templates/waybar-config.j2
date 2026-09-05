@@ -36,20 +36,20 @@
     },
     "network#wlan": {
         "interface": "{{ config.wlan_interface }}",
-        "format-wifi": "WLAN {essid}",
+        "format-wifi": "wlan {essid}",
         "format-disconnected": "",
         "tooltip-format": "{ipaddr}",
         "on-click": "foot -e nmtui"
     },
     "network#eth": {
         "interface": "{{ config.eth_interface }}",
-        "format-ethernet": "ETH {ipaddr}",
+        "format-ethernet": "eth {ipaddr}",
         "format-disconnected": "",
         "tooltip": false
     },
     "battery": {
-        "format": "BAT {capacity}%",
-        "format-charging": "BAT +{capacity}%",
+        "format": "bat {capacity}%",
+        "format-charging": "bat +{capacity}%",
         "interval": 2,
         "states": {
             "critical": 15
@@ -57,34 +57,34 @@
         "tooltip": false
     },
     "cpu": {
-        "format": "CPU {usage}%",
+        "format": "cpu {usage}%",
         "interval": 3,
         "tooltip": false
     },
     "memory": {
-        "format": "RAM {percentage}%",
+        "format": "ram {percentage}%",
         "interval": 3,
         "tooltip": false
     },
     "disk": {
-        "format": "DISK {percentage_used}%",
+        "format": "disk {percentage_used}%",
         "interval": 30,
         "tooltip": false
     },
     "temperature": {
         "hwmon-path": "/sys/devices/platform/coretemp.0/hwmon/hwmon{{ config.hwmon }}/temp1_input",
-        "format": "TEMP {temperatureC}°C",
+        "format": "temp {temperatureC}°C",
         "interval": 3,
         "tooltip": false
     },
     "pulseaudio": {
-        "format": "VOL {volume}%",
-        "format-muted": "VOL muted",
+        "format": "vol {volume}%",
+        "format-muted": "vol muted",
         "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
         "tooltip": false
     },
     "custom/updates": {
-        "exec": "pacman -Qu 2>/dev/null | wc -l | xargs -I{} sh -c 'if [ {} -gt 0 ]; then echo \"PKG {}\"; fi'",
+        "exec": "pacman -Qu 2>/dev/null | wc -l | xargs -I{} sh -c 'if [ {} -gt 0 ]; then echo \"pkg {}\"; fi'",
         "interval": 300,
         "tooltip": false
     },
