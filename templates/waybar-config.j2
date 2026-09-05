@@ -17,6 +17,10 @@
         "cpu",
         "memory",
         "disk",
+        "custom/weather",
+{% if config.euro %}
+        "custom/euro",
+{% endif %}
         "temperature",
         "pulseaudio",
         "custom/updates",
@@ -94,6 +98,18 @@
         "interval": 300,
         "tooltip": false
     },
+    "custom/weather": {
+        "exec": "weather",
+        "interval": 900,
+        "tooltip": false
+    },
+{% if config.euro %}
+    "custom/euro": {
+        "exec": "euro",
+        "interval": 300,
+        "tooltip": false
+    },
+{% endif %}
     "tray": {
         "spacing": 8
     }

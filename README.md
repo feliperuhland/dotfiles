@@ -39,3 +39,4 @@ dotfiles        Entry point script
 - brightnessctl, playerctl, pactl
 - grim, slurp
 - cronie (or another cron implementation), libnotify (notify-send)
+- curl, jq
