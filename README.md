@@ -34,6 +34,7 @@ dotfiles        Entry point script
 
 - ansible
 - sway, waybar, mako, fuzzel, foot
+- neovim
 - swaylock, swayidle
 - kanshi
 - brightnessctl, playerctl, pactl

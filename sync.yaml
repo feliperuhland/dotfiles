@@ -33,6 +33,13 @@
         - .config/kanshi
         - .local/bin
 
+    - name: Symlink nvim config directory
+      ansible.builtin.file:
+        src: "{{ playbook_dir }}/nvim"
+        dest: "~/.config/nvim"
+        state: link
+        force: true
+
     - name: Generate config files into generated/
       template:
         src: "templates/{{ item.src }}.j2"
