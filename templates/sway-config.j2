@@ -147,7 +147,7 @@ exec dotfiles
 
 exec mako
 
-exec kanshi
+exec_always pkill -x kanshi; exec kanshi
 
 exec swayidle -w \
     timeout {{ config.screen_off_timeout }} 'swaymsg "output * dpms off"' \
