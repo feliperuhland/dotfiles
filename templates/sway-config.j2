@@ -66,6 +66,18 @@ bindsym $mod+Shift+8 move container to workspace 8
 bindsym $mod+Shift+9 move container to workspace 9
 bindsym $mod+Shift+0 move container to workspace 10
 
+# workspace-to-monitor assignment (docked)
+workspace 1 output {{ config.monitors.docked_outputs[0].name }}
+workspace 2 output {{ config.monitors.docked_outputs[0].name }}
+workspace 3 output {{ config.monitors.docked_outputs[0].name }}
+workspace 4 output {{ config.monitors.docked_outputs[0].name }}
+workspace 5 output {{ config.monitors.docked_outputs[1].name }}
+workspace 6 output {{ config.monitors.docked_outputs[1].name }}
+workspace 7 output {{ config.monitors.docked_outputs[1].name }}
+workspace 8 output {{ config.monitors.docked_outputs[2].name }}
+workspace 9 output {{ config.monitors.docked_outputs[2].name }}
+workspace 10 output {{ config.monitors.docked_outputs[2].name }}
+
 # assign apps
 assign [app_id="firefox"] workspace 1
 assign [app_id="Signal"] workspace 8
