@@ -8,8 +8,8 @@
     "layer": "top",
     "position": "top",
     "output": ["{{ config.monitors.laptop_output }}", "{{ ns.primary_output }}"],
-    "modules-left": ["sway/workspaces", "sway/mode"],
-    "modules-center": ["clock"],
+    "modules-left": ["custom/os"],
+    "modules-center": ["sway/workspaces", "sway/mode"],
     "modules-right": [
         "network#eth",
         "network#wlan",
@@ -20,8 +20,13 @@
         "temperature",
         "pulseaudio",
         "custom/updates",
-        "tray"
+        "tray",
+        "clock"
     ],
+    "custom/os": {
+        "format": "arch",
+        "tooltip": false
+    },
     "sway/workspaces": {
         "disable-scroll": true,
         "all-outputs": true
