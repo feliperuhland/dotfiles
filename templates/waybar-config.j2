@@ -28,8 +28,8 @@
         "clock"
     ],
     "custom/os": {
-        "exec": "echo \"arch/$(uname -r)/$(uptime -p | sed 's/^up //')\"",
-        "interval": 60,
+        "exec": "echo \"arch/$(uname -r)\"",
+        "interval": "once",
         "tooltip": false
     },
     "sway/workspaces": {
