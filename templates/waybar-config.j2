@@ -24,7 +24,8 @@
         "clock"
     ],
     "custom/os": {
-        "format": "arch",
+        "exec": "echo \"arch $(uname -r)\"",
+        "interval": "once",
         "tooltip": false
     },
     "sway/workspaces": {
