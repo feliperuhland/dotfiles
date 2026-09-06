@@ -100,3 +100,8 @@
     - name: Reload sway
       ansible.builtin.command: swaymsg reload
       ignore_errors: true
+
+    - name: Reload zsh config
+      ansible.builtin.shell: source ~/.zshrc; true
+      args:
+        executable: /usr/bin/zsh

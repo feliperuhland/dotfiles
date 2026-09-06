@@ -1,3 +1,7 @@
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP DISPLAY SWAYSOCK GDK_BACKEND
+exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP DISPLAY SWAYSOCK
+exec sh -c 'env | grep -E "WAYLAND_DISPLAY|XDG_CURRENT_DESKTOP|XDG_SESSION_TYPE" > /tmp/sway-env.log'
+
 set $mod Mod4
 
 font pango:monospace 8
