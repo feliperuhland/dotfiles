@@ -25,6 +25,7 @@ dotfiles install  # (re)install the dotfiles command to ~/.local/bin
 ```
 templates/      Jinja2 templates for each config file
 generated/      Rendered configs (gitignored, symlinked to $HOME)
+scripts/        Utility scripts symlinked to ~/.local/bin
 local_config.yaml  Machine-specific variables (gitignored)
 sync.yaml       Ansible playbook
 dotfiles        Entry point script

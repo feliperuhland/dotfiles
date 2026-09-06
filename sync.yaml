@@ -83,7 +83,7 @@
 
     - name: Symlink scripts to ~/.local/bin
       ansible.builtin.file:
-        src: "{{ playbook_dir }}/{{ item }}"
+        src: "{{ playbook_dir }}/scripts/{{ item }}"
         dest: "~/.local/bin/{{ item }}"
         state: link
       loop:
