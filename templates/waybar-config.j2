@@ -11,12 +11,12 @@
     "modules-left": ["custom/os", "sway/workspaces", "sway/mode"],
     "modules-center": [],
     "modules-right": [
-        "network#eth",
-        "network#wlan",
-        "battery",
         "cpu",
         "memory",
         "disk",
+        "battery",
+        "network#eth",
+        "network#wlan",
         "custom/weather",
 {% if config.euro %}
         "custom/euro",
@@ -53,7 +53,7 @@
     },
     "network#eth": {
         "interface": "{{ config.eth_interface }}",
-        "format-ethernet": "eth {ipaddr}",
+        "format-ethernet": "<span color=\"#{{ config.colors.dim }}\">|</span> eth {ipaddr}",
         "format-disconnected": "",
         "tooltip": false
     },
@@ -67,7 +67,7 @@
         "tooltip": false
     },
     "cpu": {
-        "format": "<span color=\"#{{ config.colors.dim }}\">|</span> cpu {usage}%",
+        "format": "cpu {usage}%",
         "interval": 3,
         "tooltip": false
     },
