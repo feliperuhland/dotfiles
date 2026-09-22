@@ -73,16 +73,6 @@ compinit
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# cd into a git repo under ~/projects, filtered via fzf
-cdf() {
-    local line
-    line=$(find ~/projects -mindepth 1 -type d -name .git -prune -exec dirname {} \; \
-        | awk -v prefix="$HOME/projects/" '{rel=$0; sub("^"prefix,"",rel); print rel"\t"$0}' \
-        | sort -u -t $'\t' -k1,1 \
-        | fzf --delimiter '\t' --with-nth=1)
-    [[ -n "$line" ]] && cd "${line#*$'\t'}"
-}
-
 eval "$(direnv hook zsh)"
 
 [ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
