@@ -1,0 +1,7 @@
+# Managed by dotfiles (system.yaml); overrides /etc/systemd/logind.conf.
+# While the lid stays closed logind keeps re-applying the action, so a
+# spurious wake with the lid shut goes back to sleep after HoldoffTimeoutSec.
+[Login]
+HandleLidSwitch={{ config.power.lid.battery }}
+HandleLidSwitchExternalPower={{ config.power.lid.ac }}
+HandleLidSwitchDocked={{ config.power.lid.docked }}

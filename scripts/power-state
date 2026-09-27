@@ -1,0 +1,43 @@
+#!/bin/sh
+# Print the machine's power state: docked, ac or battery.
+# "docked" is logind's own Docked property (dock or >1 display), the same
+# signal logind uses for HandleLidSwitchDocked, so sway and logind agree.
+#
+# Usage: power-state          print the state
+#        power-state --is S   exit 0 only if the state is S (for swayidle)
+
+state() {
+    docked=$(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 \
+        org.freedesktop.login1.Manager Docked 2>/dev/null)
+    if [ "$docked" = "b true" ]; then
+        echo docked
+        return
+    fi
+
+    has_battery=no
+    for ps in /sys/class/power_supply/*; do
+        [ -e "$ps/type" ] || continue
+        case "$(cat "$ps/type")" in
+            Battery) has_battery=yes ;;
+            Mains|USB)
+                if [ "$(cat "$ps/online" 2>/dev/null)" = 1 ]; then
+                    echo ac
+                    return
+                fi
+                ;;
+        esac
+    done
+
+    # A machine without a battery is always on external power.
+    if [ "$has_battery" = no ]; then
+        echo ac
+    else
+        echo battery
+    fi
+}
+
+case "${1:-}" in
+    --is) [ "$(state)" = "$2" ] ;;
+    "")   state ;;
+    *)    echo "Usage: power-state [--is docked|ac|battery]" >&2; exit 2 ;;
+esac

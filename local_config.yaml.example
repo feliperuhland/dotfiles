@@ -6,7 +6,31 @@ config:
   eth_interface: eth0
   euro: false
   copilot: false
-  screen_off_timeout: 300
+  power:
+    # seconds idle before locking, per power-state (docked/ac/battery);
+    # screens power off screen_off_delay seconds after the lock
+    lock:
+      docked: 600
+      ac: 300
+      battery: 180
+    screen_off_delay: 30
+    # seconds idle before suspend-then-hibernate; omitted states never sleep
+    idle_sleep:
+      battery: 600
+    # logind lid action per state (logind.conf HandleLidSwitch* values)
+    lid:
+      docked: ignore
+      ac: suspend-then-hibernate
+      battery: suspend-then-hibernate
+    hibernate:
+      swapfile: /swapfile
+      swapfile_size: 16G
+      # suspend-then-hibernate: hibernate after this long asleep
+      delay: 1h
+    # UPower CriticalPowerAction: Hibernate, HybridSleep or PowerOff
+    critical_battery_action: Hibernate
+    # log the wakeup source of every resume (kernel pm_debug_messages)
+    debug_wakeups: true
   colors:
     bg: "0f0f0f"
     fg: "e8e8e8"

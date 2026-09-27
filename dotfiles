@@ -13,8 +13,14 @@ sync_dotfiles() {
     ansible-playbook "$REPO/sync.yaml"
 }
 
+# Root-level config (lid, sleep, hibernation); asks for the sudo password.
+system_dotfiles() {
+    ansible-playbook --ask-become-pass "$REPO/system.yaml"
+}
+
 case "${1:-sync}" in
     install) install_dotfiles ;;
     sync)    sync_dotfiles ;;
-    *)       echo "Usage: dotfiles [install|sync]"; exit 1 ;;
+    system)  system_dotfiles ;;
+    *)       echo "Usage: dotfiles [install|sync|system]"; exit 1 ;;
 esac

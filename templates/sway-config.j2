@@ -111,8 +111,8 @@ set $mode_system System (l) lock, (e) logout, (s) suspend, (h) hibernate, (r) re
 mode "$mode_system" {
     bindsym l exec $Locker, mode "default"
     bindsym e exec swaymsg exit, mode "default"
-    bindsym s exec $Locker && systemctl suspend, mode "default"
-    bindsym h exec $Locker && systemctl hibernate, mode "default"
+    bindsym s exec systemctl suspend-then-hibernate, mode "default"
+    bindsym h exec systemctl hibernate, mode "default"
     bindsym r exec systemctl reboot, mode "default"
     bindsym Shift+s exec systemctl poweroff -i, mode "default"
     bindsym Return mode "default"
@@ -165,9 +165,25 @@ exec mako
 
 exec_always pkill -x kanshi; exec kanshi
 
-exec swayidle -w \
-    timeout {{ config.screen_off_timeout }} 'swaymsg "output * dpms off"' \
-    resume 'swaymsg "output * dpms on"'
+# idle: per power state (docked/ac/battery) lock, then screens off, then
+# optionally sleep; see config.power in local_config.yaml. Every sleep
+# locks first via before-sleep, so bindings and the lid don't lock themselves.
+set $PowerIs $HOME/.local/bin/power-state --is
+exec_always pkill -x swayidle; exec swayidle -w \
+{% for state, secs in config.power.lock.items() %}
+    timeout {{ secs }} '$PowerIs {{ state }} && $Locker' \
+    timeout {{ secs + config.power.screen_off_delay }} '$PowerIs {{ state }} && swaymsg "output * power off"' \
+        resume 'swaymsg "output * power on"' \
+{% endfor %}
+{% for state, secs in config.power.idle_sleep.items() %}
+    timeout {{ secs }} '$PowerIs {{ state }} && systemctl suspend-then-hibernate' \
+{% endfor %}
+    before-sleep '$Locker' \
+    after-resume 'swaymsg "output * power on"' \
+    lock '$Locker'
+
+for_window [app_id=".*"] inhibit_idle fullscreen
+for_window [class=".*"] inhibit_idle fullscreen
 
 exec systemctl --user start xdg-desktop-portal-wlr
 

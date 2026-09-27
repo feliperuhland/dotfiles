@@ -1,0 +1,192 @@
+---
+# System-level (root) config: lid/sleep policy and hibernation into a swap
+# file. Run by hand with `dotfiles system` (asks for the sudo password); it is
+# never part of the plain `dotfiles` sync that sway runs on startup.
+- hosts: localhost
+  become: true
+  vars_files:
+    - local_config.yaml
+  vars:
+    power: "{{ config.power }}"
+    swapfile: "{{ config.power.hibernate.swapfile }}"
+  tasks:
+    - name: Create systemd drop-in directories
+      ansible.builtin.file:
+        path: "/etc/systemd/{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - logind.conf.d
+        - sleep.conf.d
+
+    - name: logind lid policy
+      ansible.builtin.template:
+        src: templates/logind-lid.conf.j2
+        dest: /etc/systemd/logind.conf.d/50-dotfiles-lid.conf
+        mode: "0644"
+      notify: Reload logind
+
+    - name: suspend-then-hibernate delay
+      ansible.builtin.template:
+        src: templates/sleep-hibernate.conf.j2
+        dest: /etc/systemd/sleep.conf.d/50-dotfiles-hibernate.conf
+        mode: "0644"
+
+    # swap file
+
+    - name: Read swap file filesystem
+      ansible.builtin.command: findmnt -no UUID,FSTYPE -T {{ swapfile | dirname }}
+      register: swap_fs
+      changed_when: false
+
+    - name: Refuse Btrfs (filefrag offsets are wrong there)
+      ansible.builtin.assert:
+        that: swap_fs.stdout.split()[1] != "btrfs"
+        fail_msg: "{{ swapfile }} is on Btrfs; resume_offset needs btrfs inspect-internal, not supported here"
+
+    - name: Check swap file
+      ansible.builtin.stat:
+        path: "{{ swapfile }}"
+      register: swapfile_stat
+
+    - name: Create swap file
+      ansible.builtin.command: mkswap -U clear --size {{ power.hibernate.swapfile_size }} --file {{ swapfile }}
+      when: not swapfile_stat.stat.exists
+
+    - name: Swap file in fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: '^{{ swapfile | regex_escape }}\s'
+        line: "{{ swapfile }} none swap defaults 0 0"
+
+    - name: Read active swaps
+      ansible.builtin.command: swapon --show=NAME --noheadings
+      register: active_swaps
+      changed_when: false
+
+    - name: Enable swap file
+      ansible.builtin.command: swapon {{ swapfile }}
+      when: swapfile not in active_swaps.stdout_lines
+
+    - name: Read swap file physical offset
+      ansible.builtin.shell: filefrag -v {{ swapfile }} | awk '$1=="0:" {print substr($4, 1, length($4)-2)}'
+      register: swap_offset
+      changed_when: false
+
+    - name: Build resume kernel parameters
+      ansible.builtin.set_fact:
+        resume_args:
+          - "resume=UUID={{ swap_fs.stdout.split()[0] }}"
+          - "resume_offset={{ swap_offset.stdout | trim }}"
+
+    # initramfs
+
+    - name: Read mkinitcpio.conf
+      ansible.builtin.slurp:
+        src: /etc/mkinitcpio.conf
+      register: mkinitcpio_conf
+
+    - name: Add resume hook after filesystems (busybox initramfs only; the systemd hook resumes by itself)
+      ansible.builtin.replace:
+        path: /etc/mkinitcpio.conf
+        regexp: '^(?!.*\bresume\b)(HOOKS=\(.*\bfilesystems\b)'
+        replace: '\1 resume'
+      when: >-
+        'systemd' not in (mkinitcpio_conf.content | b64decode
+        | regex_search('(?m)^HOOKS=[(].*[)]'))[7:-1].split()
+      notify: Rebuild initramfs
+
+    # kernel command line (systemd-boot)
+
+    - name: Locate boot loader entries
+      ansible.builtin.command: bootctl --print-boot-path
+      register: boot_path
+      changed_when: false
+      failed_when: false
+
+    - name: Find boot loader entries
+      ansible.builtin.find:
+        paths: "{{ boot_path.stdout }}/loader/entries"
+        patterns: "*.conf"
+      register: boot_entries
+      when: boot_path.rc == 0
+
+    - name: Read boot loader entries
+      ansible.builtin.slurp:
+        src: "{{ item.path }}"
+      loop: "{{ boot_entries.files | default([]) }}"
+      loop_control:
+        label: "{{ item.path }}"
+      register: boot_entry_contents
+
+    - name: Set resume= and resume_offset= in boot loader entries
+      ansible.builtin.lineinfile:
+        path: "{{ item.source }}"
+        regexp: '^options\s'
+        line: >-
+          options {{ (((item.content | b64decode
+          | regex_search('(?m)^options[ \t].*$')).split()[1:]
+          | reject('match', 'resume(_offset)?=') | list) + resume_args) | join(' ') }}
+      loop: "{{ boot_entry_contents.results }}"
+      loop_control:
+        label: "{{ item.source }}"
+      when: item.content | b64decode is search('(?m)^options[ \t]')
+
+    # battery and wakeups
+
+    - name: Check UPower config
+      ansible.builtin.stat:
+        path: /etc/UPower/UPower.conf
+      register: upower_conf
+
+    - name: Critical battery action
+      ansible.builtin.lineinfile:
+        path: /etc/UPower/UPower.conf
+        regexp: '^CriticalPowerAction='
+        line: "CriticalPowerAction={{ power.critical_battery_action }}"
+      when: upower_conf.stat.exists
+      notify: Restart upower
+
+    - name: Log the wakeup source of every resume
+      ansible.builtin.copy:
+        dest: /etc/tmpfiles.d/50-dotfiles-pm-debug.conf
+        content: "w /sys/power/pm_debug_messages - - - - 1\n"
+        mode: "0644"
+      when: power.debug_wakeups
+      notify: Apply pm debug tmpfile
+
+    - name: Stop logging wakeup sources
+      ansible.builtin.file:
+        path: /etc/tmpfiles.d/50-dotfiles-pm-debug.conf
+        state: absent
+      when: not power.debug_wakeups
+
+    - name: Warn if UPower is missing
+      ansible.builtin.debug:
+        msg: "UPower isn't installed; nothing hibernates at critical battery."
+      when: not upower_conf.stat.exists
+
+    - name: Run pending handlers before a possible failure below
+      ansible.builtin.meta: flush_handlers
+
+    - name: No systemd-boot entries were updated
+      ansible.builtin.fail:
+        msg: >-
+          Everything else is applied, but no systemd-boot entries were found.
+          Add these to your kernel command line by hand: {{ resume_args | join(' ') }}
+      when: boot_entry_contents.results | default([]) | length == 0
+
+  handlers:
+    - name: Reload logind
+      ansible.builtin.command: systemctl kill -s HUP systemd-logind
+
+    - name: Rebuild initramfs
+      ansible.builtin.command: mkinitcpio -P
+
+    - name: Restart upower
+      ansible.builtin.systemd_service:
+        name: upower
+        state: restarted
+
+    - name: Apply pm debug tmpfile
+      ansible.builtin.command: systemd-tmpfiles --create /etc/tmpfiles.d/50-dotfiles-pm-debug.conf

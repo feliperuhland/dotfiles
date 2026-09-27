@@ -18,7 +18,27 @@ dotfiles
 ```sh
 dotfiles          # sync and apply all configs
 dotfiles install  # (re)install the dotfiles command to ~/.local/bin
+dotfiles system   # root-level config: lid/sleep policy, hibernation (sudo)
 ```
+
+## Power management
+
+`config.power` in `local_config.yaml` drives both sides:
+
+- sway (`dotfiles`): swayidle locks, powers screens off and optionally
+  sleeps after per-state idle times; `scripts/power-state` reports the
+  state (`docked`, `ac` or `battery`, docked meaning logind's `Docked`).
+  Every sleep locks first via `before-sleep`.
+- system (`dotfiles system`): logind lid actions per state,
+  `HibernateDelaySec` for suspend-then-hibernate, a swap file for
+  hibernation (fstab, `resume` mkinitcpio hook, `resume=`/`resume_offset=`
+  in systemd-boot entries), UPower's critical battery action, and
+  optional kernel wakeup-source logging.
+
+`dotfiles system` supports ext4-style swap files (not Btrfs), busybox or
+systemd mkinitcpio hooks, and systemd-boot. With another boot loader it
+applies everything else and prints the kernel parameters to add by hand.
+Test with `systemctl hibernate` once before relying on it.
 
 ## Structure
 
@@ -27,7 +47,8 @@ templates/      Jinja2 templates for each config file
 generated/      Rendered configs (gitignored, symlinked to $HOME)
 scripts/        Utility scripts symlinked to ~/.local/bin
 local_config.yaml  Machine-specific variables (gitignored)
-sync.yaml       Ansible playbook
+sync.yaml       Ansible playbook (user configs)
+system.yaml     Ansible playbook (root-level power config)
 dotfiles        Entry point script
 ```
 
@@ -37,6 +58,7 @@ dotfiles        Entry point script
 - sway, waybar, mako, fuzzel, foot
 - neovim
 - swaylock, swayidle
+- upower (critical battery action), e2fsprogs (filefrag)
 - kanshi
 - brightnessctl, playerctl, pactl
 - grim, slurp
