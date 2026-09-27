@@ -1,11 +1,13 @@
+# Profiles must say enable/disable explicitly: kanshi otherwise keeps an
+# output's current state, so undocking left the laptop panel disabled.
 profile "undocked" {
-    output {{ config.monitors.laptop_output }} mode {{ config.monitors.laptop_resolution }} position 0,0
+    output {{ config.monitors.laptop_output }} enable mode {{ config.monitors.laptop_resolution }} position 0,0
 }
 
 profile "docked" {
     output {{ config.monitors.laptop_output }} disable
 {% for m in config.monitors.docked_outputs %}
-    output {{ m.name }} mode {{ m.resolution }} position {{ m.position }}{% if m.scale is defined %} scale {{ m.scale }}{% endif %}{% if m.transform is defined %} transform {{ m.transform }}{% endif %}
+    output {{ m.name }} enable mode {{ m.resolution }} position {{ m.position }}{% if m.scale is defined %} scale {{ m.scale }}{% endif %}{% if m.transform is defined %} transform {{ m.transform }}{% endif %}
 
 {% endfor %}
 {% for m in config.monitors.docked_outputs %}
