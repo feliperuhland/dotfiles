@@ -91,6 +91,7 @@
         - weather
         - euro
         - power-state
+        - power-sleep
 
     - name: Install dotfiles drift-check cron job
       ansible.builtin.cron:

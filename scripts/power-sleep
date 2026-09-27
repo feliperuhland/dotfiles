@@ -1,0 +1,11 @@
+#!/bin/sh
+# Suspend, then hibernate after HibernateDelaySec.
+# logind refuses suspend-then-hibernate until hibernation works (swap file,
+# resume= from `dotfiles system`), which from a sway binding fails silently;
+# fall back to plain suspend and say why.
+
+systemctl suspend-then-hibernate 2>/dev/null && exit 0
+
+notify-send -u critical 'Hibernation unavailable' \
+    'Plain suspend instead; check `systemctl hibernate` and run dotfiles system'
+exec systemctl suspend
