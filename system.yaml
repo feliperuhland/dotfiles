@@ -9,6 +9,12 @@
   vars:
     power: "{{ config.power }}"
     swapfile: "{{ config.power.hibernate.swapfile }}"
+    nl: "\n"
+    # set when resume= is on the kernel command line through something other
+    # than systemd-boot entries; otherwise the boot entries prove it
+    cmdline_managed_elsewhere: "{{ config.power.hibernate.cmdline_managed_elsewhere | default(false) }}"
+    hibernating_actions: [hibernate, hybrid-sleep, suspend-then-hibernate]
+    mkinitcpio_dropin: /etc/mkinitcpio.conf.d/zz-dotfiles-resume.conf
   tasks:
     - name: Create systemd drop-in directories
       ansible.builtin.file:
@@ -18,19 +24,6 @@
       loop:
         - logind.conf.d
         - sleep.conf.d
-
-    - name: logind lid policy
-      ansible.builtin.template:
-        src: templates/logind-lid.conf.j2
-        dest: /etc/systemd/logind.conf.d/50-dotfiles-lid.conf
-        mode: "0644"
-      notify: Reload logind
-
-    - name: suspend-then-hibernate delay
-      ansible.builtin.template:
-        src: templates/sleep-hibernate.conf.j2
-        dest: /etc/systemd/sleep.conf.d/50-dotfiles-hibernate.conf
-        mode: "0644"
 
     # swap file
 
@@ -81,19 +74,45 @@
 
     # initramfs
 
-    - name: Read mkinitcpio.conf
-      ansible.builtin.slurp:
-        src: /etc/mkinitcpio.conf
-      register: mkinitcpio_conf
+    # HOOKS can span lines or be overridden in mkinitcpio.conf.d, so ask bash
+    # for the effective array (excluding our own drop-in).
+    - name: Read effective mkinitcpio HOOKS
+      ansible.builtin.command:
+        argv:
+          - bash
+          - -c
+          - |
+            . /etc/mkinitcpio.conf
+            for f in /etc/mkinitcpio.conf.d/*.conf; do
+                [ -e "$f" ] && [ "$f" != "$1" ] && . "$f"
+            done
+            echo "${HOOKS[*]}"
+          - bash
+          - "{{ mkinitcpio_dropin }}"
+      register: mkinitcpio_hooks
+      changed_when: false
 
-    - name: Add resume hook after filesystems (busybox initramfs only; the systemd hook resumes by itself)
-      ansible.builtin.replace:
-        path: /etc/mkinitcpio.conf
-        regexp: '^(?!.*\bresume\b)(HOOKS=\(.*\bfilesystems\b)'
-        replace: '\1 resume'
-      when: >-
-        'systemd' not in (mkinitcpio_conf.content | b64decode
-        | regex_search('(?m)^HOOKS=[(].*[)]'))[7:-1].split()
+    - name: Create mkinitcpio drop-in directory
+      ansible.builtin.file:
+        path: /etc/mkinitcpio.conf.d
+        state: directory
+        mode: "0755"
+
+    # busybox initramfs only; the systemd hook resumes by itself. Appended at
+    # the end, after encrypt; root is mounted only after all hooks have run.
+    - name: Add the resume hook
+      ansible.builtin.copy:
+        dest: "{{ mkinitcpio_dropin }}"
+        content: "# Managed by dotfiles (system.yaml).{{ nl }}HOOKS+=(resume){{ nl }}"
+        mode: "0644"
+      when: "'systemd' not in mkinitcpio_hooks.stdout.split() and 'resume' not in mkinitcpio_hooks.stdout.split()"
+      notify: Rebuild initramfs
+
+    - name: Remove the resume hook drop-in where it isn't needed
+      ansible.builtin.file:
+        path: "{{ mkinitcpio_dropin }}"
+        state: absent
+      when: "'systemd' in mkinitcpio_hooks.stdout.split() or 'resume' in mkinitcpio_hooks.stdout.split()"
       notify: Rebuild initramfs
 
     # kernel command line (systemd-boot)
@@ -119,18 +138,34 @@
         label: "{{ item.path }}"
       register: boot_entry_contents
 
+    # systemd-boot joins every options line; strip resume args from all of
+    # them and append ours to the last one.
     - name: Set resume= and resume_offset= in boot loader entries
-      ansible.builtin.lineinfile:
-        path: "{{ item.source }}"
-        regexp: '^options\s'
-        line: >-
-          options {{ (((item.content | b64decode
-          | regex_search('(?m)^options[ \t].*$')).split()[1:]
-          | reject('match', 'resume(_offset)?=') | list) + resume_args) | join(' ') }}
+      ansible.builtin.copy:
+        dest: "{{ item.source }}"
+        backup: true
+        content: |-
+          {%- set lines = (item.content | b64decode).splitlines() -%}
+          {%- set ns = namespace(last=-1, opt=0, out=[]) -%}
+          {%- for l in lines if l.split()[:1] == ['options'] -%}
+          {%- set ns.last = loop.index0 -%}
+          {%- endfor -%}
+          {%- for l in lines -%}
+          {%- if l.split()[:1] == ['options'] -%}
+          {%- set opts = l.split()[1:] | reject('match', 'resume(_offset)?=') | list -%}
+          {%- if ns.opt == ns.last -%}{%- set opts = opts + resume_args -%}{%- endif -%}
+          {%- set ns.opt = ns.opt + 1 -%}
+          {%- if opts -%}{%- set ns.out = ns.out + [(['options'] + opts) | join(' ')] -%}{%- endif -%}
+          {%- else -%}
+          {%- set ns.out = ns.out + [l] -%}
+          {%- endif -%}
+          {%- endfor -%}
+          {{ ns.out | join(nl) }}{{ nl }}
       loop: "{{ boot_entry_contents.results }}"
       loop_control:
         label: "{{ item.source }}"
       when: item.content | b64decode is search('(?m)^options[ \t]')
+      register: boot_entry_updates
 
     # battery and wakeups
 
@@ -166,15 +201,39 @@
         msg: "UPower isn't installed; nothing hibernates at critical battery."
       when: not upower_conf.stat.exists
 
+    # lid and sleep policy, last: a lid action logind can't carry out does
+    # nothing at all, so hibernating actions become suspend until resume= is
+    # known to be on the kernel command line.
+    - name: Decide whether hibernation is set up
+      ansible.builtin.set_fact:
+        hibernate_ready: >-
+          {{ cmdline_managed_elsewhere | bool
+          or (boot_entry_updates.results | default([]) | rejectattr('skipped', 'defined') | list | length > 0) }}
+
+    - name: logind lid policy
+      ansible.builtin.template:
+        src: templates/logind-lid.conf.j2
+        dest: /etc/systemd/logind.conf.d/50-dotfiles-lid.conf
+        mode: "0644"
+      notify: Reload logind
+
+    - name: suspend-then-hibernate delay
+      ansible.builtin.template:
+        src: templates/sleep-hibernate.conf.j2
+        dest: /etc/systemd/sleep.conf.d/50-dotfiles-hibernate.conf
+        mode: "0644"
+
     - name: Run pending handlers before a possible failure below
       ansible.builtin.meta: flush_handlers
 
-    - name: No systemd-boot entries were updated
+    - name: resume= isn't on the kernel command line yet
       ansible.builtin.fail:
         msg: >-
-          Everything else is applied, but no systemd-boot entries were found.
-          Add these to your kernel command line by hand: {{ resume_args | join(' ') }}
-      when: boot_entry_contents.results | default([]) | length == 0
+          Everything else is applied and the lid falls back to plain suspend,
+          but no systemd-boot entries were updated. Add these to your kernel
+          command line by hand, then set config.power.hibernate.cmdline_managed_elsewhere
+          and run `dotfiles system` again: {{ resume_args | join(' ') }}
+      when: not hibernate_ready | bool
 
   handlers:
     - name: Reload logind

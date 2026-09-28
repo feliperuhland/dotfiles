@@ -37,7 +37,10 @@ dotfiles system   # root-level config: lid/sleep policy, hibernation (sudo)
 
 `dotfiles system` supports ext4-style swap files (not Btrfs), busybox or
 systemd mkinitcpio hooks, and systemd-boot. With another boot loader it
-applies everything else and prints the kernel parameters to add by hand.
+applies everything else and prints the kernel parameters to add by hand;
+set `hibernate.cmdline_managed_elsewhere` once they're in. Until hibernation
+is set up, hibernating lid actions fall back to plain suspend, and the sway
+sleep keys fall back the same way (`scripts/power-sleep`).
 Test with `systemctl hibernate` once before relying on it.
 
 ## Structure

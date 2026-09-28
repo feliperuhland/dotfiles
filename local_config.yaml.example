@@ -27,6 +27,9 @@ config:
       swapfile_size: 16G
       # suspend-then-hibernate: hibernate after this long asleep
       delay: 1h
+      # true when resume=/resume_offset= are put on the kernel command line
+      # by hand (no systemd-boot); until then the lid falls back to suspend
+      cmdline_managed_elsewhere: false
     # UPower CriticalPowerAction: Hibernate, HybridSleep or PowerOff
     critical_battery_action: Hibernate
     # log the wakeup source of every resume (kernel pm_debug_messages)

@@ -1,7 +1,9 @@
 # Managed by dotfiles (system.yaml); overrides /etc/systemd/logind.conf.
 # While the lid stays closed logind keeps re-applying the action, so a
 # spurious wake with the lid shut goes back to sleep after HoldoffTimeoutSec.
+# Hibernating actions become suspend until hibernation is set up.
+{% macro lid(action) %}{{ 'suspend' if action in hibernating_actions and not hibernate_ready | bool else action }}{% endmacro %}
 [Login]
-HandleLidSwitch={{ config.power.lid.battery }}
-HandleLidSwitchExternalPower={{ config.power.lid.ac }}
-HandleLidSwitchDocked={{ config.power.lid.docked }}
+HandleLidSwitch={{ lid(config.power.lid.battery) }}
+HandleLidSwitchExternalPower={{ lid(config.power.lid.ac) }}
+HandleLidSwitchDocked={{ lid(config.power.lid.docked) }}
