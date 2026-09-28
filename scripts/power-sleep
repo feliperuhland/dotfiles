@@ -1,11 +1,19 @@
 #!/bin/sh
-# Suspend, then hibernate after HibernateDelaySec.
-# logind refuses suspend-then-hibernate until hibernation works (swap file,
-# resume= from `dotfiles system`), which from a sway binding fails silently;
-# fall back to plain suspend and say why.
+# Put the machine to sleep, falling back to plain suspend when logind refuses
+# (hibernation needs the swap file and resume= from `dotfiles system`); from a
+# sway binding a refusal is otherwise silent.
+#
+# Usage: power-sleep            suspend, hibernate after HibernateDelaySec
+#        power-sleep hibernate  hibernate now
 
-systemctl suspend-then-hibernate 2>/dev/null && exit 0
+verb=${1:-suspend-then-hibernate}
+case "$verb" in
+    suspend-then-hibernate|hibernate) ;;
+    *) echo "Usage: power-sleep [hibernate]" >&2; exit 2 ;;
+esac
 
-notify-send -u critical 'Hibernation unavailable' \
-    'Plain suspend instead; check `systemctl hibernate` and run dotfiles system'
+err=$(systemctl "$verb" 2>&1) && exit 0
+
+notify-send -u critical "systemctl $verb failed, suspending instead" \
+    "${err:-no error message}"
 exec systemctl suspend

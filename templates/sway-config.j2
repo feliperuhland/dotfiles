@@ -1,6 +1,5 @@
+# --systemd also imports these into the systemd user manager
 exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP DISPLAY SWAYSOCK GDK_BACKEND
-exec systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP DISPLAY SWAYSOCK
-exec sh -c 'env | grep -E "WAYLAND_DISPLAY|XDG_CURRENT_DESKTOP|XDG_SESSION_TYPE" > /tmp/sway-env.log'
 
 set $mod Mod4
 
@@ -70,17 +69,14 @@ bindsym $mod+Shift+8 move container to workspace 8
 bindsym $mod+Shift+9 move container to workspace 9
 bindsym $mod+Shift+0 move container to workspace 10
 
-# workspace-to-monitor assignment (docked)
-workspace 1 output {{ config.monitors.docked_outputs[0].name }}
-workspace 2 output {{ config.monitors.docked_outputs[0].name }}
-workspace 3 output {{ config.monitors.docked_outputs[0].name }}
-workspace 4 output {{ config.monitors.docked_outputs[0].name }}
-workspace 5 output {{ config.monitors.docked_outputs[1].name }}
-workspace 6 output {{ config.monitors.docked_outputs[1].name }}
-workspace 7 output {{ config.monitors.docked_outputs[1].name }}
-workspace 8 output {{ config.monitors.docked_outputs[2].name }}
-workspace 9 output {{ config.monitors.docked_outputs[2].name }}
-workspace 10 output {{ config.monitors.docked_outputs[2].name }}
+# workspace-to-monitor assignment (docked): an output's own `workspaces`
+# list, else 1-4, 5-7 and 8-10 for the first three outputs
+{% set default_workspaces = [[1, 2, 3, 4], [5, 6, 7], [8, 9, 10]] %}
+{% for m in config.monitors.docked_outputs %}
+{% for ws in m.workspaces | default(default_workspaces[loop.index0] if loop.index0 < 3 else []) %}
+workspace {{ ws }} output {{ m.name }}
+{% endfor %}
+{% endfor %}
 
 # assign apps
 assign [app_id="firefox"] workspace 1
@@ -113,7 +109,7 @@ mode "$mode_system" {
     bindsym l exec $Locker, mode "default"
     bindsym e exec swaymsg exit, mode "default"
     bindsym s exec $Sleep, mode "default"
-    bindsym h exec systemctl hibernate, mode "default"
+    bindsym h exec $Sleep hibernate, mode "default"
     bindsym r exec systemctl reboot, mode "default"
     bindsym Shift+s exec systemctl poweroff -i, mode "default"
     bindsym Return mode "default"
@@ -169,6 +165,9 @@ exec_always pkill -x kanshi; exec kanshi
 # idle: per power state (docked/ac/battery) lock, then screens off, then
 # optionally sleep; see config.power in local_config.yaml. Every sleep
 # locks first via before-sleep, so bindings and the lid don't lock themselves.
+# The unconditional lock at the longest per-state time is a backstop: a state
+# change while idle (charger pulled, undocked) would otherwise skip every
+# state's check and never lock.
 set $PowerIs $HOME/.local/bin/power-state --is
 exec_always pkill -x swayidle; exec swayidle -w \
 {% for state, secs in config.power.lock.items() %}
@@ -179,12 +178,13 @@ exec_always pkill -x swayidle; exec swayidle -w \
 {% for state, secs in config.power.idle_sleep.items() %}
     timeout {{ secs }} '$PowerIs {{ state }} && $Sleep' \
 {% endfor %}
+    timeout {{ config.power.lock.values() | max }} '$Locker' \
     before-sleep '$Locker' \
     after-resume 'swaymsg "output * power on"' \
     lock '$Locker'
 
-for_window [app_id=".*"] inhibit_idle fullscreen
-for_window [class=".*"] inhibit_idle fullscreen
+# No blanket inhibit_idle fullscreen: it also blocked locking. Players and
+# browsers inhibit idle themselves (idle-inhibit protocol) while playing.
 
 exec systemctl --user start xdg-desktop-portal-wlr
 

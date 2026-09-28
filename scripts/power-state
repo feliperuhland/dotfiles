@@ -18,7 +18,10 @@ state() {
     for ps in /sys/class/power_supply/*; do
         [ -e "$ps/type" ] || continue
         case "$(cat "$ps/type")" in
-            Battery) has_battery=yes ;;
+            Battery)
+                # scope=Device is a peripheral's battery (mouse, headset)
+                [ "$(cat "$ps/scope" 2>/dev/null)" = Device ] || has_battery=yes
+                ;;
             Mains|USB)
                 if [ "$(cat "$ps/online" 2>/dev/null)" = 1 ]; then
                     echo ac
