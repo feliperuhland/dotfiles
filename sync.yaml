@@ -8,23 +8,32 @@
         path: "{{ playbook_dir }}/generated"
         state: directory
 
-    - name: HOME symlinks
-      ansible.builtin.file:
-        src: "{{ playbook_dir }}/{{ item }}"
-        dest: "~/{{ item }}"
-        state: link
+    # vim and URxvt configs were removed from the repo; drop their symlinks,
+    # but only while they still point here.
+    - name: Check symlinks to removed configs
+      ansible.builtin.stat:
+        path: "~/{{ item }}"
+        follow: false
       loop:
+        - .vimrc
         - .Xresources
         - .Xresources.d
+      register: removed_links
+
+    - name: Remove symlinks to removed configs
+      ansible.builtin.file:
+        path: "{{ item.stat.path }}"
+        state: absent
+      loop: "{{ removed_links.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      when: item.stat.islnk | default(false) and item.stat.lnk_source.startswith(playbook_dir ~ '/')
 
     - name: Create necessary directories
       ansible.builtin.file:
         path: "~/{{ item }}"
         state: directory
       loop:
-        - .vim/swap_files
-        - .vim/backup_files
-        - .vim/undo_files
         - .config/sway
         - .config/waybar
         - .config/mako
@@ -60,7 +69,6 @@
         src: "templates/{{ item.src }}.j2"
         dest: "{{ playbook_dir }}/generated/{{ item.name }}"
       loop:
-        - { src: "vim-config",     name: "vimrc" }
         - { src: "sway-config",    name: "sway-config" }
         - { src: "waybar-config",  name: "waybar-config" }
         - { src: "waybar-style",   name: "waybar-style.css" }
@@ -76,7 +84,6 @@
         dest: "~/{{ item.dst }}"
         state: link
       loop:
-        - { name: "vimrc",            dst: ".vimrc" }
         - { name: "sway-config",      dst: ".config/sway/config" }
         - { name: "waybar-config",    dst: ".config/waybar/config" }
         - { name: "waybar-style.css", dst: ".config/waybar/style.css" }
