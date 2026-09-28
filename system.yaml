@@ -202,13 +202,25 @@
       when: not upower_conf.stat.exists
 
     # lid and sleep policy, last: a lid action logind can't carry out does
-    # nothing at all, so hibernating actions become suspend until resume= is
-    # known to be on the kernel command line.
+    # nothing at all, so hibernating actions become suspend until the kernel
+    # offers hibernation and resume= is known to be on the kernel command line.
+    # The kernel drops "disk" from /sys/power/state under lockdown (often from
+    # Secure Boot), nohibernate, memfd_secret use or CXL memory.
+    - name: Read kernel sleep states
+      ansible.builtin.slurp:
+        src: /sys/power/state
+      register: power_states
+
     - name: Decide whether hibernation is set up
       ansible.builtin.set_fact:
-        hibernate_ready: >-
+        kernel_hibernates: "{{ 'disk' in (power_states.content | b64decode).split() }}"
+        cmdline_ready: >-
           {{ cmdline_managed_elsewhere | bool
           or (boot_entry_updates.results | default([]) | rejectattr('skipped', 'defined') | list | length > 0) }}
+
+    - name: Combine hibernation checks
+      ansible.builtin.set_fact:
+        hibernate_ready: "{{ kernel_hibernates | bool and cmdline_ready | bool }}"
 
     - name: logind lid policy
       ansible.builtin.template:
@@ -226,6 +238,16 @@
     - name: Run pending handlers before a possible failure below
       ansible.builtin.meta: flush_handlers
 
+    - name: The kernel doesn't offer hibernation
+      ansible.builtin.fail:
+        msg: >-
+          Everything else is applied and the lid falls back to plain suspend,
+          but /sys/power/state has no "disk": the kernel has hibernation
+          switched off (see /sys/kernel/security/lockdown, Secure Boot,
+          nohibernate in /proc/cmdline). Run `dotfiles system` again once
+          it's fixed.
+      when: not kernel_hibernates | bool
+
     - name: resume= isn't on the kernel command line yet
       ansible.builtin.fail:
         msg: >-
@@ -233,7 +255,7 @@
           but no systemd-boot entries were updated. Add these to your kernel
           command line by hand, then set config.power.hibernate.cmdline_managed_elsewhere
           and run `dotfiles system` again: {{ resume_args | join(' ') }}
-      when: not hibernate_ready | bool
+      when: not cmdline_ready | bool
 
   handlers:
     - name: Reload logind
