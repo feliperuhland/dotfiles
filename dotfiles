@@ -3,10 +3,18 @@ set -e
 
 REPO=$(dirname "$(realpath "$0")")
 
+LINK="$HOME/.local/bin/dotfiles"
+
 install_dotfiles() {
     mkdir -p "$HOME/.local/bin"
-    ln -sf "$REPO/dotfiles" "$HOME/.local/bin/dotfiles"
-    echo "Installed: $HOME/.local/bin/dotfiles -> $REPO/dotfiles"
+    ln -sf "$REPO/dotfiles" "$LINK"
+    echo "Installed: $LINK -> $REPO/dotfiles"
+}
+
+# Every run keeps the installed command pointing at this script, so pulling
+# the repo is enough to update it (and a stale plain copy gets replaced).
+ensure_installed() {
+    [ "$(readlink "$LINK" 2>/dev/null)" = "$REPO/dotfiles" ] || install_dotfiles
 }
 
 sync_dotfiles() {
@@ -20,7 +28,7 @@ system_dotfiles() {
 
 case "${1:-sync}" in
     install) install_dotfiles ;;
-    sync)    sync_dotfiles ;;
-    system)  system_dotfiles ;;
+    sync)    ensure_installed; sync_dotfiles ;;
+    system)  ensure_installed; system_dotfiles ;;
     *)       echo "Usage: dotfiles [install|sync|system]"; exit 1 ;;
 esac
