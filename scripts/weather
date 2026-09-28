@@ -1,8 +1,12 @@
 #!/bin/sh
+# Current temperature and precipitation from Open-Meteo.
+# Usage: weather LABEL LATITUDE LONGITUDE   (from config.weather)
 set -e
 
-DATA=$(curl -fsS "https://api.open-meteo.com/v1/forecast?latitude=52.3676&longitude=4.9041&current=temperature_2m,precipitation&timezone=Europe%2FAmsterdam")
+[ $# -eq 3 ] || { echo "Usage: weather LABEL LATITUDE LONGITUDE" >&2; exit 2; }
+
+DATA=$(curl -fsS -m 10 "https://api.open-meteo.com/v1/forecast?latitude=$2&longitude=$3&current=temperature_2m,precipitation&timezone=auto")
 TEMP=$(printf '%s' "$DATA" | jq -r '.current.temperature_2m')
 RAIN=$(printf '%s' "$DATA" | jq -r '.current.precipitation')
 
-echo "ams ${TEMP}c ${RAIN}mm"
+echo "$1 ${TEMP}c ${RAIN}mm"

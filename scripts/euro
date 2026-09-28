@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
 
-RATE=$(curl -fsS "https://api.frankfurter.dev/v1/latest?from=EUR&to=BRL" | jq -r '.rates.BRL')
+RATE=$(curl -fsS -m 10 "https://api.frankfurter.dev/v1/latest?from=EUR&to=BRL" | jq -r '.rates.BRL')
 
 echo "eur/brl ${RATE}"

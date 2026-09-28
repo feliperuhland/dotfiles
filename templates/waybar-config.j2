@@ -17,7 +17,9 @@
         "battery",
         "network#eth",
         "network#wlan",
+{% if config.weather is defined %}
         "custom/weather",
+{% endif %}
 {% if config.euro %}
         "custom/euro",
 {% endif %}
@@ -60,7 +62,7 @@
     "battery": {
         "format": "<span color=\"#{{ config.colors.dim }}\">|</span> bat {capacity}%",
         "format-charging": "<span color=\"#{{ config.colors.dim }}\">|</span> bat +{capacity}%",
-        "interval": 2,
+        "interval": 60,
         "states": {
             "critical": 15
         },
@@ -82,7 +84,9 @@
         "tooltip": false
     },
     "temperature": {
-        "hwmon-path": "/sys/devices/platform/coretemp.0/hwmon/hwmon{{ config.hwmon }}/temp1_input",
+        "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+        "input-filename": "temp1_input",
+        "critical-threshold": {{ config.temp_critical | default(90) }},
         "format": "<span color=\"#{{ config.colors.dim }}\">|</span> temp {temperatureC}°C",
         "interval": 3,
         "tooltip": false
@@ -94,17 +98,19 @@
         "tooltip": false
     },
     "custom/updates": {
-        "exec": "pacman -Qu 2>/dev/null | wc -l | xargs -I{} sh -c 'if [ {} -gt 0 ]; then echo \"pkg {}\"; fi'",
+        "exec": "checkupdates 2>/dev/null | wc -l | awk '$1 > 0 { print \"pkg \" $1 }'",
         "format": "<span color=\"#{{ config.colors.dim }}\">|</span> {}",
-        "interval": 300,
+        "interval": 1800,
         "tooltip": false
     },
+{% if config.weather is defined %}
     "custom/weather": {
-        "exec": "$HOME/.local/bin/weather",
+        "exec": "$HOME/.local/bin/weather {{ config.weather.label }} {{ config.weather.latitude }} {{ config.weather.longitude }}",
         "format": "<span color=\"#{{ config.colors.dim }}\">|</span> {}",
         "interval": 900,
         "tooltip": false
     },
+{% endif %}
 {% if config.euro %}
     "custom/euro": {
         "exec": "$HOME/.local/bin/euro",

@@ -1,7 +1,13 @@
 ---
 config:
   background: ""
-  hwmon: 1
+  # waybar temperature turns red at this many degrees C (default 90)
+  temp_critical: 90
+  # waybar weather module; omit to hide it
+  weather:
+    label: city
+    latitude: 0.0
+    longitude: 0.0
   wlan_interface: wlan0
   eth_interface: eth0
   euro: false
@@ -49,3 +55,5 @@ config:
         position: "0,0"
         scale: 1.0
         primary: true
+        # optional; default 1-4, 5-7, 8-10 for the first three outputs
+        workspaces: [1, 2, 3, 4]

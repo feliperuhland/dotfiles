@@ -67,3 +67,4 @@ dotfiles        Entry point script
 - grim, slurp
 - libnotify (notify-send)
 - curl, jq
+- pacman-contrib (checkupdates, for the waybar updates count)
