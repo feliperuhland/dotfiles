@@ -31,6 +31,7 @@
         - .config/fuzzel
         - .config/foot
         - .config/kanshi
+        - .config/systemd/user
         - .local/bin
 
     - name: Check current ~/.config/nvim
@@ -38,10 +39,14 @@
         path: "~/.config/nvim"
       register: nvim_dest
 
-    - name: Remove pre-existing real nvim config directory (one-time)
-      ansible.builtin.file:
-        path: "~/.config/nvim"
-        state: absent
+    # Runs unattended at every sway login, so never delete: move a real
+    # directory aside instead.
+    - name: Move a pre-existing real nvim config directory aside
+      ansible.builtin.command:
+        argv:
+          - mv
+          - "{{ ansible_env.HOME }}/.config/nvim"
+          - "{{ ansible_env.HOME }}/.config/nvim.pre-dotfiles-{{ now(fmt='%Y-%m-%d-%H%M%S') }}"
       when: nvim_dest.stat.exists and not nvim_dest.stat.islnk
 
     - name: Symlink nvim config directory
@@ -93,17 +98,53 @@
         - power-state
         - power-sleep
 
-    - name: Install dotfiles drift-check cron job
+    # A systemd user timer, not cron: no cron daemon is installed by default.
+    - name: Drift-check service
+      ansible.builtin.copy:
+        dest: "~/.config/systemd/user/dotfiles-drift.service"
+        content: |
+          [Unit]
+          Description=Check dotfiles for drift from templates/local_config.yaml
+
+          [Service]
+          Type=oneshot
+          ExecStart=%h/.local/bin/check-drift
+      register: drift_service
+
+    - name: Drift-check timer
+      ansible.builtin.copy:
+        dest: "~/.config/systemd/user/dotfiles-drift.timer"
+        content: |
+          [Unit]
+          Description=Check dotfiles for drift every 15 minutes
+
+          [Timer]
+          OnBootSec=5min
+          OnUnitActiveSec=15min
+
+          [Install]
+          WantedBy=timers.target
+      register: drift_timer
+
+    - name: Enable the drift-check timer
+      ansible.builtin.systemd_service:
+        name: dotfiles-drift.timer
+        scope: user
+        enabled: true
+        state: started
+        daemon_reload: "{{ drift_service.changed or drift_timer.changed }}"
+
+    - name: Check for crontab (earlier versions used a cron job)
+      ansible.builtin.stat:
+        path: /usr/bin/crontab
+      register: crontab_bin
+
+    - name: Remove the old drift-check cron job
       ansible.builtin.cron:
         name: "dotfiles drift check"
-        minute: "*/15"
-        job: "$HOME/.local/bin/check-drift"
+        state: absent
+      when: crontab_bin.stat.exists
 
     - name: Reload sway
       ansible.builtin.command: swaymsg reload
       ignore_errors: true
-
-    - name: Reload zsh config
-      ansible.builtin.shell: source ~/.zshrc; true
-      args:
-        executable: /usr/bin/zsh
