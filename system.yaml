@@ -4,6 +4,8 @@
 # never part of the plain `dotfiles` sync that sway runs on startup.
 - hosts: localhost
   become: true
+  # a later failure must not drop notified handlers (initramfs, logind)
+  force_handlers: true
   vars_files:
     - local_config.yaml
   vars:
@@ -115,6 +117,28 @@
       when: "'systemd' in mkinitcpio_hooks.stdout.split() or 'resume' in mkinitcpio_hooks.stdout.split()"
       notify: Rebuild initramfs
 
+    # Catches a rebuild lost to an earlier failed run: the drop-in is then
+    # unchanged, so nothing above notifies.
+    - name: Check the resume hook drop-in
+      ansible.builtin.stat:
+        path: "{{ mkinitcpio_dropin }}"
+      register: dropin_stat
+
+    - name: Find initramfs images
+      ansible.builtin.find:
+        paths: /boot
+        patterns: "initramfs-*.img"
+      register: initramfs_images
+
+    - name: Initramfs is older than the resume hook drop-in
+      ansible.builtin.debug:
+        msg: rebuilding initramfs
+      changed_when: true
+      when: >-
+        dropin_stat.stat.exists and initramfs_images.files | length > 0
+        and (initramfs_images.files | map(attribute='mtime') | min) < dropin_stat.stat.mtime
+      notify: Rebuild initramfs
+
     # kernel command line (systemd-boot)
 
     - name: Locate boot loader entries
@@ -138,12 +162,23 @@
         label: "{{ item.path }}"
       register: boot_entry_contents
 
+    # Not copy's backup: its timestamped name has ":", which the FAT ESP
+    # rejects. The name doesn't end in .conf, so systemd-boot ignores it.
+    - name: Keep each boot loader entry as first seen
+      ansible.builtin.copy:
+        remote_src: true
+        src: "{{ item.source }}"
+        dest: "{{ item.source }}.dotfiles-orig"
+        force: false
+      loop: "{{ boot_entry_contents.results }}"
+      loop_control:
+        label: "{{ item.source }}"
+
     # systemd-boot joins every options line; strip resume args from all of
     # them and append ours to the last one.
     - name: Set resume= and resume_offset= in boot loader entries
       ansible.builtin.copy:
         dest: "{{ item.source }}"
-        backup: true
         content: |-
           {%- set lines = (item.content | b64decode).splitlines() -%}
           {%- set ns = namespace(last=-1, opt=0, out=[]) -%}

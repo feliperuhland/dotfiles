@@ -93,6 +93,14 @@
         - { name: "foot.ini",         dst: ".config/foot/foot.ini" }
         - { name: "kanshi-config",    dst: ".config/kanshi/config" }
 
+    # force: replaces a stale plain copy of the script
+    - name: Symlink the dotfiles command
+      ansible.builtin.file:
+        src: "{{ playbook_dir }}/dotfiles"
+        dest: "~/.local/bin/dotfiles"
+        state: link
+        force: true
+
     - name: Symlink scripts to ~/.local/bin
       ansible.builtin.file:
         src: "{{ playbook_dir }}/scripts/{{ item }}"
