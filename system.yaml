@@ -182,6 +182,27 @@
       when: upower_conf.stat.exists
       notify: Restart upower
 
+    # USB devices (mice, the dock and its hubs) can't wake the machine from
+    # suspend; the power button, lid and built-in keyboard still can. Also on
+    # bind: usbhid enables wakeup for keyboards while binding, after "add".
+    # Charging over the dock is USB-PD, unaffected.
+    - name: USB wakeup policy
+      ansible.builtin.copy:
+        dest: /etc/udev/rules.d/90-dotfiles-usb-wakeup.rules
+        content: |
+          # Managed by dotfiles (system.yaml): no wakeup from USB devices.
+          ACTION=="add|bind|change", SUBSYSTEM=="usb", DRIVERS=="usb", ATTR{power/wakeup}=="enabled", ATTR{power/wakeup}="disabled"
+        mode: "0644"
+      when: not power.usb_wakeup | default(false)
+      notify: Apply udev rules
+
+    - name: Allow wakeup from USB devices again
+      ansible.builtin.file:
+        path: /etc/udev/rules.d/90-dotfiles-usb-wakeup.rules
+        state: absent
+      when: power.usb_wakeup | default(false)
+      notify: Apply udev rules
+
     - name: Log the wakeup source of every resume
       ansible.builtin.copy:
         dest: /etc/tmpfiles.d/50-dotfiles-pm-debug.conf
@@ -229,7 +250,7 @@
         mode: "0644"
       notify: Reload logind
 
-    - name: suspend-then-hibernate delay
+    - name: Hibernate delay and mode
       ansible.builtin.template:
         src: templates/sleep-hibernate.conf.j2
         dest: /etc/systemd/sleep.conf.d/50-dotfiles-hibernate.conf
@@ -258,6 +279,9 @@
       when: not cmdline_ready | bool
 
   handlers:
+    - name: Apply udev rules
+      ansible.builtin.shell: udevadm control --reload && udevadm trigger --subsystem-match=usb --action=change
+
     - name: Reload logind
       ansible.builtin.command: systemctl kill -s HUP systemd-logind
 

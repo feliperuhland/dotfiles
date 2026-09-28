@@ -32,7 +32,9 @@ dotfiles system   # root-level config: lid/sleep policy, hibernation (sudo)
 - system (`dotfiles system`): logind lid actions per state,
   `HibernateDelaySec` for suspend-then-hibernate, a swap file for
   hibernation (fstab, `resume` mkinitcpio hook, `resume=`/`resume_offset=`
-  in systemd-boot entries), UPower's critical battery action, and
+  in systemd-boot entries), `HibernateMode` (default `shutdown`: only the
+  power button resumes), a udev rule so USB devices (mice, the dock) can't
+  wake the machine from suspend, UPower's critical battery action, and
   optional kernel wakeup-source logging.
 
 `dotfiles system` supports ext4-style swap files (not Btrfs), busybox or

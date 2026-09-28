@@ -1,3 +1,6 @@
 # Managed by dotfiles (system.yaml).
 [Sleep]
 HibernateDelaySec={{ config.power.hibernate.delay }}
+# shutdown: power fully off once the image is written, so only the power
+# button resumes; platform (ACPI S4) lets the firmware arm wake devices.
+HibernateMode={{ config.power.hibernate.mode | default('shutdown') }}
