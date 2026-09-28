@@ -4,6 +4,13 @@ profile "undocked" {
     output {{ config.monitors.laptop_output }} enable mode {{ config.monitors.laptop_resolution }} position 0,0
 }
 
+# Laptop plus any one other display (projector, TV): mirror nothing, just
+# enable both and let sway place the external one.
+profile "external" {
+    output {{ config.monitors.laptop_output }} enable mode {{ config.monitors.laptop_resolution }} position 0,0
+    output * enable
+}
+
 profile "docked" {
     output {{ config.monitors.laptop_output }} disable
 {% for m in config.monitors.docked_outputs %}

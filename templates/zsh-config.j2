@@ -1,14 +1,14 @@
 HISTFILE=~/.histfile
 HISTSIZE=10000
 SAVEHIST=10000
+# a command typed with a leading space stays out of history (tokens etc.)
+setopt HIST_IGNORE_SPACE
 
 export GOPATH=~/go
 export PYTHONDONTWRITEBYTECODE=1
 export VISUAL=nvim
 export EDITOR=nvim
 export XDG_CURRENT_DESKTOP=sway
-
-bindkey -e
 
 export KEYTIMEOUT=1
 bindkey -v
@@ -22,7 +22,7 @@ alias v="nvim"
 # The following lines were added by compinstall
 zstyle :compinstall filename "/home/$USER/.zshrc"
 
-autoload -Uz compinit promptinit
+autoload -Uz compinit
 
 # history
 bindkey "^[[A" history-beginning-search-backward
@@ -34,8 +34,6 @@ bindkey '^[OB' history-beginning-search-forward
 autoload -Uz vcs_info
 
 zstyle ':vcs_info:git:*' formats '[%b]'
-
-plugins=(git virtualenv)
 
 set_virtual_env() {
     if [[ -n "$VIRTUAL_ENV" ]]; then
@@ -53,7 +51,10 @@ precmd() {
     if [[ -n ${vcs_info_msg_0_} ]]; then
         # vcs_info found something (the documentation got that backwards
         # STATUS line taken from https://github.com/robbyrussell/oh-my-zsh/blob/master/lib/git.zsh
-        STATUS=$(command git status --porcelain 2> /dev/null | tail -n1)
+        # core.fsmonitor from an untrusted repo's .git/config would run a
+        # command on every prompt; only the first line matters.
+        STATUS=$(command git -c core.fsmonitor=false --no-optional-locks \
+            status --porcelain 2> /dev/null | head -n1)
         if [[ -n $STATUS ]]; then
             PROMPT="$PROMPT %F{red}${vcs_info_msg_0_} %f%# "
         else
@@ -73,8 +74,8 @@ compinit
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-eval "$(direnv hook zsh)"
+(( $+commands[direnv] )) && eval "$(direnv hook zsh)"
 
-eval "$(command cdf --init zsh)"
+(( $+commands[cdf] )) && eval "$(command cdf --init zsh)"
 
 [ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"

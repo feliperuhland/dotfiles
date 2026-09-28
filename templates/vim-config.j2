@@ -35,12 +35,6 @@ set is
 set clipboard=unnamed
 set hlsearch
 
-let g:pymode_rope = 0
-
-" Documentation
-let g:pymode_doc = 1
-let g:pymode_doc_key = 'K'
-
 filetype plugin on
 set omnifunc=syntaxcomplete#Complete
 
@@ -59,9 +53,10 @@ inoremap <C-space> <C-x><C-o>
 
 let g:black_virtualenv = "~/.black-venv/"
 
-{% if config.copilot %}
-imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
-
+" Enter confirms a coc completion
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
                               \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+{% if config.copilot %}
+imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 {% endif %}
